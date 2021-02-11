@@ -1,24 +1,47 @@
 {
-  "name": "spring-vue",
+  "name": "Spring",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
+  "main": "background.js",
   "dependencies": {
+    "@amcharts/amcharts4": "^4.10.15",
+    "@amcharts/amcharts4-geodata": "^4.1.19",
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/pro-regular-svg-icons": "^5.15.2",
+    "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "core-js": "^3.6.5",
-    "vue": "^3.0.0"
+    "exceljs": "^4.2.0",
+    "i": "^0.3.6",
+    "lodash": "^4.17.20",
+    "npm": "^7.5.3",
+    "promise-worker": "^2.0.1",
+    "quasar": "^2.0.0-beta.4",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
+    "electron": "^11.0.0",
+    "electron-devtools-installer": "^3.1.0",
+    "electron-packager": "^15.2.0",
     "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^7.0.0-0"
+    "eslint-plugin-vue": "^7.0.0-0",
+    "vue-cli-plugin-electron-builder": "~2.0.0-rc.6",
+    "worker-loader": "^3.0.7"
   },
   "eslintConfig": {
     "root": true,

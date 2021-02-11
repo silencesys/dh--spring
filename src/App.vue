@@ -1,26 +1,47 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app-layout">
+    <h2 id="app-title">
+      Spring
+    </h2>
+    <FileInformation :file-name="fileName" />
+    <AppNavigation />
+    <div id="app-content">
+      <router-view :current-file="fileName" />
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { ipcRenderer } from 'electron'
+import AppNavigation from '@/components/Menu.vue'
+import FileInformation from '@/components/FileInformation.vue'
 
 export default {
-  name: 'App',
+  name: 'AppView',
+
   components: {
-    HelloWorld
+    AppNavigation,
+    FileInformation
+  },
+
+  data () {
+    return {
+      fileName: '',
+      content: [],
+      columns: [],
+      loading: false
+    }
+  },
+
+  async mounted () {
+    ipcRenderer.on('opened-file', (event, { fileName }) => {
+      this.fileName = fileName
+    });
+
+    const result = await ipcRenderer.invoke('last-opened-file')
+    if (result) {
+      this.fileName = result.split('.json')[0]
+    }
   }
 }
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
