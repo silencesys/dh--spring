@@ -1,8 +1,7 @@
 name: Build and release
 
 on:
-  release:
-    types: [ created, prereleased ]
+  push:
     branches: [ main ]
 
 jobs:
