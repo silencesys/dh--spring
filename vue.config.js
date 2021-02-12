@@ -6,17 +6,20 @@ module.exports = {
       builderOptions: {
         appId: 'com.spring.app',
         productName: 'Spring',
+        copyright: 'Copyright © 2021 Martin Roček',
+        directories: {
+          output: 'dist'
+        },
         mac: {
-          target: {
-            target: 'zip', arch: 'arm64'
-          }
+          target: [
+            { target: 'zip', arch: 'arm64' }
+          ]
         },
         win: {
-          target: ['nsis']
+          target: ['zip', 'nsis']
         },
-        electronDownload: {
-          platform: 'darwin',
-          arch: 'arm64'
+        linux: {
+          target: ['zip']
         }
       }
     }
