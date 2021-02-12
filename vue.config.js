@@ -10,15 +10,17 @@ module.exports = {
         directories: {
           output: 'dist'
         },
+        publish: {
+          provider: 'github',
+          releaseType: ['release', 'prerelease']
+        },
         mac: {
           target: [
             { target: 'zip', arch: 'arm64' },
           ],
-          publish: ['github']
         },
         win: {
-          target: ['zip', 'nsis'],
-          publish: ['github']
+          target: ['zip', 'nsis']
         }
       }
     }

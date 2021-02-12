@@ -66,6 +66,11 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow()
 })
 
+// Disable top menu bar for all windows
+app.on('browser-window-created', function (e, window) {
+  window.setMenu(null);
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
