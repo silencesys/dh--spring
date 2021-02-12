@@ -3,6 +3,10 @@ import * as am4core from "@amcharts/amcharts4/core"
 
 export default function springTheme(target) {
   if (target instanceof am4core.InterfaceColorSet) {
-    target.setFor("text", am4core.color("#fff"));
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      target.setFor("text", am4core.color("#fff"));
+    } else {
+      target.setFor("text", am4core.color("#122462"));
+    }
   }
 }

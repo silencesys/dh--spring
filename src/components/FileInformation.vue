@@ -1,7 +1,7 @@
 <template>
   <div id="app-fileinfo">
     <h3 class="app-fileinfo__filename">
-      {{ fileName }}
+      {{ fileName  || 'žádný soubor nebyl vybrán' }}
     </h3>
     <button class="button__round" @click.prevent="openXslxFile"><!--
       --><font-awesome-icon :icon="['far', 'folder-open']" /><!--

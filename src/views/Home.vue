@@ -136,7 +136,7 @@ export default {
       const columns = []
 
       for (const column of this.file.columns) {
-        if (this.copy.columns.indexOf(column) >= 0) {
+        if (this.tableColumns.indexOf(column) >= 0) {
           columns.push({ name: column, icon: 'check-square'})
         } else {
           columns.push({ name: column, icon: 'square' })
@@ -185,6 +185,8 @@ export default {
       this.filters = file.filters || {}
     },
     addOrRemoveColumn (column) {
+      this.setCopyColumns()
+
       const copyIndex = this.copy.columns.indexOf(column.name)
       const fileIndex = this.file.columns.indexOf(column.name)
       if (copyIndex >= 0) {
@@ -192,6 +194,8 @@ export default {
       } else {
         this.copy.columns.splice(fileIndex, 0, column.name)
       }
+
+      this.saveFile()
     },
     toggleModal () {
       this.modalOpen = !this.modalOpen

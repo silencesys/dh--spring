@@ -4,6 +4,12 @@
   box-sizing: border-box;
   position: relative;
 }
+#pie-chart * {
+  margin: auto;
+  padding: inherit;
+  box-sizing: inherit;
+  position: initial;
+}
 
 html, body {
   height: 100%;
@@ -302,6 +308,7 @@ body {
   padding: 0 1rem;
   align-items: center;
   cursor: pointer;
+  position: relative;
 }
 .select__choice:hover {
   background-color: var(--blue-075);
@@ -427,7 +434,37 @@ body {
 }
 
 #app-graphs {
-  padding: 2rem;
+  padding: 2rem 2rem 3rem;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.graph-selectors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: .75rem;
+  margin-bottom: 4rem;
+}
+.graph-selectors .select {
+  z-index: inherit;
+  width: 100%;
+}
+.graph-selectors .select__choice {
+  border: 1px solid var(--blue-075);
+  padding: .5rem 1rem;
+  margin: 0;
+  width: 100%;
+}
+.graph-selectors .select__choice svg:first-of-type {
+  margin: auto;
+  right: 1rem;
+  position: absolute;
+}
+.graph-selectors .select__list {
+  margin: 0;
+  padding: 0;
+  z-index: 99;
 }
 
 /* Dirty hack that shouldnt be there */

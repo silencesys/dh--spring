@@ -1,0 +1,29 @@
+name: Build/release
+
+on: push
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+
+      - name: Build/release Electron app
+        run: npm run electron:build
+
+      - uses: actions/upload-artifact@v2
+        with:
+            name: Spring
+            path: dist_electron/*.zip
+            retention-days: 1
