@@ -27,6 +27,8 @@ jobs:
         run: npm install
 
       - name: Build/release Electron app
+        env:
+          GH_TOKEN: ${{ GH_TOKEN }}
         run: npm run electron:build
 
       - uses: actions/upload-artifact@v2
