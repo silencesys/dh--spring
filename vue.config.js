@@ -13,14 +13,15 @@ module.exports = {
         },
         publish: {
           provider: 'github',
-          releaseType: ['release', 'prerelease']
+          releaseType: 'draft'
         },
         mac: {
           target: [
             { target: 'tar.gz', arch: 'arm64' },
             { target: 'tar.gz', arch: 'x64' }
           ],
-          darkModeSupport: true
+          darkModeSupport: true,
+          category: 'public.app-category.productivity'
         },
         win: {
           target: ['zip', 'nsis']

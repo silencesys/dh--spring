@@ -1,9 +1,8 @@
-name: Build/release
+name: Build and release
 
 on:
-  push:
-    branches: [ main ]
   release:
+    types: [ created ]
     branches: [ main ]
 
 jobs:
@@ -23,12 +22,12 @@ jobs:
         with:
           node-version: '15'
 
-      - name: Install node packages
+      - name: Install application packages
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
         run: npm install
 
-      - name: Build/release Electron app
+      - name: Build and release Electron app
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run electron:build --publish=onTagOrDraft
+        run: npm run electron:build

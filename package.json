@@ -1,7 +1,12 @@
 {
   "name": "spring",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "private": true,
+  "author": {
+    "name": "Martin Roček",
+    "email": "martin@rocek.dev"
+  },
+  "description": "A simple utility app to browse XSLX data and so on.",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -63,5 +68,9 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "license": "SEE LICENSE IN LICENSE.MD>",
+  "repository": {
+    "url": "https://github.com/silencesys/spring"
+  }
 }
