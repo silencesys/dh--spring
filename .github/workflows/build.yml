@@ -3,6 +3,8 @@ name: Build/release
 on:
   push:
     branches: [ main ]
+  release:
+    branches: [ main ]
 
 jobs:
   release:
