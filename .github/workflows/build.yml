@@ -32,5 +32,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
             name: Spring
-            path: dist_electron/*.zip
+            path: dist/*.zip
             retention-days: 1
