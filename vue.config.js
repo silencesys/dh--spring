@@ -12,14 +12,13 @@ module.exports = {
         },
         mac: {
           target: [
-            { target: 'zip', arch: 'arm64' }
-          ]
+            { target: 'zip', arch: 'arm64' },
+          ],
+          publish: ['github']
         },
         win: {
-          target: ['zip', 'nsis']
-        },
-        linux: {
-          target: ['zip']
+          target: ['zip', 'nsis'],
+          publish: ['github']
         }
       }
     }
