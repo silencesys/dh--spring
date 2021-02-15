@@ -4,7 +4,7 @@ import router from './router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
-  faTimesCircle, faPlusCircle, faSquare, faCheckSquare
+  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter
 } from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Quasar, QVirtualScroll } from 'quasar'
@@ -13,7 +13,7 @@ import './assets/main.css'
 
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
-  faTimesCircle, faPlusCircle, faSquare, faCheckSquare
+  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter
 )
 
 const app = createApp(App)

@@ -9,6 +9,9 @@
         <Select :columns="file.columns" v-on:new-value="setFilterField">
           <font-awesome-icon :icon="['far', 'columns']" />
         </Select>
+        <Select :columns="filterTypes" :current-value="filter.type" v-on:new-value="setFilterType">
+          <font-awesome-icon :icon="['far', 'filter']" />
+        </Select>
         <button class="button__secondary" @click.prevent="createFilter">
           Přidat filtr
         </button>
@@ -17,7 +20,7 @@
     <div>
       <ul class="data-search__filters">
         <li v-for="key in Object.keys(this.filters)" :key="key">
-          {{ key }}: {{ this.filters[key].join(', ') }}
+          {{ key }}: {{ this.filters[key].values.join(', ') }}
           <span @click.stop="removeFilter(key)"><font-awesome-icon :icon="['far', 'times-circle']" class="remove" /></span>
         </li>
       </ul>
@@ -57,7 +60,7 @@
           </button>
         </li>
       </ul>
-      <button class="button__primary" @click.prevent="toggleModal">Zavřít</button>
+      <button class="button__primary" @click.prevent="toggleModal">Zavřít a uložit</button>
       <button class="button__secondary" @click.prevent="resetColumns">Reset</button>
     </div>
   </Modal>
@@ -100,10 +103,15 @@ export default {
       sliceStart: 0,
       store: {},
       filtered: false,
+      filterTypes: [
+        { key: 'file', value: 'Rozšiřující' },
+        { key: 'copy', value: 'Upřesňující' }
+      ],
       filters: {},
       filter: {
         search: '',
-        field: ''
+        field: '',
+        type: 'file'
       },
       modalOpen: false
     }
@@ -155,17 +163,28 @@ export default {
     createFilter () {
       if (this.filter.field) {
         if (!this.filters[this.filter.field]) {
-          this.filters[this.filter.field] = []
+          this.filters[this.filter.field] = {
+            values: [],
+            type: this.filter.type
+          }
         }
-        this.filters[this.filter.field].push(this.filter.search.toString())
+        console.log(this.filter)
+        if (this.filter.search.includes(',')) {
+          const filterArray = this.filter.search.split(',')
+          this.filters[this.filter.field].values.push(...filterArray)
+        } else {
+          this.filters[this.filter.field].values.push(this.filter.search.toString())
+        }
       }
     },
     filterData () {
       this.setCopyContent()
       for (const key in this.filters) {
-        this.copy.content = this.file.content.filter((row) => {
+        console.log(key, this.filters[key])
+        console.log(this.filters[key].type, this.filters[key].values)
+        this.copy.content = this[this.filters[key].type].content.filter((row) => {
           const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
-          if (this.filters[key].some((item) => rowKeyToString.includes(item.toUpperCase()))) {
+          if (rowKeyToString && this.filters[key].values.some((item) => rowKeyToString.includes(item.trim().toUpperCase()))) {
             return row
           }
           return false
@@ -233,6 +252,10 @@ export default {
       if (!this.copy.columns) {
         this.copy.columns = [...this.file.columns]
       }
+    },
+    setFilterType ({ column }) {
+      console.log(column.key)
+      this.filter.type = column.key
     },
     saveFile () {
       this.store.set({ key: 'copy', value: this.copy })
