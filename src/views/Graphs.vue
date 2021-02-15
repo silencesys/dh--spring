@@ -1,9 +1,9 @@
 <template>
   <div id="app-graphs">
     <div class="graph-selectors">
-      <Select :columns="file.columns" v-on:new-value="({column}) => setGraph('type', column)"></Select>
-      <Select :columns="file.columns" v-on:new-value="({column}) => setGraph('category', column)"></Select>
-      <Select :columns="Object.keys(graph.keys)" v-on:new-value="({column}) => setGraph('key', column)"></Select>
+      <Select :columns="file.columns" :current-value="graph.type" v-on:new-value="({column}) => setGraph('type', column)"></Select>
+      <Select :columns="file.columns" :current-value="graph.category" v-on:new-value="({column}) => setGraph('category', column)"></Select>
+      <Select :columns="Object.keys(graph.keys)"  :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
     </div>
     <div style="height: 100%;">
       <div id="pie-chart" style="height: 100%;" />

@@ -4,16 +4,19 @@ import router from './router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
-  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter
+  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
+  faExpandAlt
 } from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Quasar, QVirtualScroll } from 'quasar'
+import clickOutside from './directives/click-outside'
 import './assets/settings.css'
 import './assets/main.css'
 
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
-  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter
+  faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
+  faExpandAlt
 )
 
 const app = createApp(App)
@@ -21,5 +24,6 @@ app.use(router)
 app.use(Quasar, {
   components: { QVirtualScroll }
 })
+app.directive('click-outside', clickOutside)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.mount('#app')

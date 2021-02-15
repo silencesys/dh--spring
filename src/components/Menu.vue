@@ -14,7 +14,7 @@
         </router-link>
       </li>
       <li>
-        <router-link to="/">
+        <router-link to="/settings">
           <font-awesome-icon :icon="['far', 'cog']" fixed-width />
           Nastavení
         </router-link>
