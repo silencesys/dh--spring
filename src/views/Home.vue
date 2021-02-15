@@ -99,6 +99,7 @@ export default {
       },
       sliceStart: 0,
       store: {},
+      filtered: false,
       filters: {},
       filter: {
         search: '',
