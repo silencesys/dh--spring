@@ -38,10 +38,10 @@ export default {
   mounted () {
     if (this.currentFile) {
       this.loadFileContent()
+      this.prepareFileContent()
+      this.setGraph('type', this.file.columns[0])
+      this.setGraph('category', this.file.columns[1])
     }
-    this.prepareFileContent()
-    this.prepareKeys()
-    this.setDataForPieChart(this.graph.key)
   },
 
   beforeUnmount () {
@@ -60,9 +60,9 @@ export default {
       chartData: {},
       graphRows: [],
       graph: {
-        type: 'Čin',
-        category: 'Trest',
-        key: 'usmrcení',
+        type: null,
+        category: null,
+        key: null,
         keys: []
       }
     }
@@ -94,11 +94,11 @@ export default {
           // array of values that in some cases should stay as single values
           let columnContent = row[column.name]
 
-          if (columnContent.includes(':') || columnContent.includes(';')) {
+          if (columnContent?.includes(':') || columnContent?.includes(';')) {
             // Check whether column content contains any of the known separators
             // if so, split it
             columnContent = row[column.name]?.split(';')
-          } else if (columnContent.includes(', ')) {
+          } else if (columnContent?.includes(', ')) {
             columnContent = row[column.name]?.split(', ')
           } else {
             // Otherwise store the column value in the sharedColumns, so it
