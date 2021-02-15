@@ -28,7 +28,6 @@ async function createWindow() {
   win = new BrowserWindow({
     width: width,
     height: height,
-    maxWidth: 1920,
     webPreferences: {
       enableRemoteModule: true,
       // Use pluginOptions.nodeIntegration, leave this alone

@@ -7,7 +7,7 @@ module.exports = {
         appId: 'com.spring.app',
         productName: 'Spring',
         copyright: 'Copyright © 2021 Martin Roček',
-        artifactName: '${name}-${version}-${os}-${platform}-${arch}.${ext}',
+        artifactName: '${name}-${version}-${os}-${arch}.${ext}',
         directories: {
           output: 'dist/'
         },
@@ -17,8 +17,8 @@ module.exports = {
         },
         mac: {
           target: [
-            { target: 'tar.gz', arch: 'arm64' },
-            { target: 'tar.gz', arch: 'x64' }
+            { target: 'tar.gz', arch: 'x64' },
+            // { target: 'tar.gz', arch: 'x64' }
           ],
           darkModeSupport: true,
           category: 'public.app-category.productivity'

@@ -161,6 +161,8 @@ export default {
 
       for (const key in this.filters) {
         this.copy.content = this.copy.content.filter((row) => {
+          console.log(typeof row[key])
+          console.log(typeof this.filters[key])
           if (row[key]?.toUpperCase().includes(this.filters[key].toUpperCase())) {
             return row
           }
