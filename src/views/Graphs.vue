@@ -158,9 +158,17 @@ export default {
     setGraph (field, value) {
       this.graph[field] = value
       this.prepareKeys()
-      if (this.chart !== null) {
-        // this.chart.dispose()
+
+      if (field === 'type') {
+        console.log(Object.keys(this.graph.keys)[0])
+        this.graph.key = Object.keys(this.graph.keys)[0]
+        this.setGraph('key', Object.keys(this.graph.keys)[0])
       }
+
+      if (this.chart !== null) {
+        this.chart.dispose()
+      }
+
       this.setDataForPieChart(this.graph.key)
     },
     prepareKeys () {
@@ -188,8 +196,6 @@ export default {
           })
         }
       }
-
-      console.log(values)
 
       this.chart = am4core.create("pie-chart", am4charts.PieChart);
       this.chart.data = values
