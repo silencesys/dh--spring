@@ -17,7 +17,7 @@
     <div>
       <ul class="data-search__filters">
         <li v-for="key in Object.keys(this.filters)" :key="key">
-          {{ key }}: {{ this.filters[key] }}
+          {{ key }}: {{ this.filters[key].join(', ') }}
           <span @click.stop="removeFilter(key)"><font-awesome-icon :icon="['far', 'times-circle']" class="remove" /></span>
         </li>
       </ul>
@@ -153,17 +153,18 @@ export default {
     },
     createFilter () {
       if (this.filter.field) {
-        this.filters[this.filter.field] = this.filter.search
+        if (!this.filters[this.filter.field]) {
+          this.filters[this.filter.field] = []
+        }
+        this.filters[this.filter.field].push(this.filter.search.toString())
       }
     },
     filterData () {
       this.setCopyContent()
-
       for (const key in this.filters) {
-        this.copy.content = this.copy.content.filter((row) => {
-          console.log(typeof row[key])
-          console.log(typeof this.filters[key])
-          if (row[key]?.toUpperCase().includes(this.filters[key].toUpperCase())) {
+        this.copy.content = this.file.content.filter((row) => {
+          const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
+          if (this.filters[key].some((item) => rowKeyToString.includes(item.toUpperCase()))) {
             return row
           }
           return false
@@ -204,7 +205,8 @@ export default {
     },
     sortColumn (column) {
       this.setCopyContent()
-      this.copy.content = this.file.content.sort((a, b) => {
+
+      this.copy.content = this.copy.content.sort((a, b) => {
         if (typeof a[column] === 'number') {
           return a[column] - b[column]
         } else if (typeof a[column] === 'string') {
