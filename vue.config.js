@@ -17,7 +17,7 @@ module.exports = {
         },
         mac: {
           target: [
-            { target: 'tar.gz', arch: 'x64' },
+            { target: 'tar.gz', arch: 'arm64' },
             // { target: 'tar.gz', arch: 'x64' }
           ],
           darkModeSupport: true,

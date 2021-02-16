@@ -3,23 +3,25 @@
     <div>
       <div id="data-search">
         <label for="search" class="data-search__search">
-          <font-awesome-icon :icon="['far', 'search']" />
           <input id="search" type="text" placeholder="Vyhledávat" v-model="filter.search">
+          <font-awesome-icon :icon="['far', 'search']" />
         </label>
         <Select :columns="file.columns" v-on:new-value="setFilterField">
           <font-awesome-icon :icon="['far', 'columns']" />
         </Select>
         <Select :columns="filterTypes" :current-value="filter.type" v-on:new-value="setFilterType">
-          <font-awesome-icon :icon="['far', 'filter']" />
+          <font-awesome-icon :icon="['far', 'filter']" fixed-width />
         </Select>
-        <button class="button__secondary" @click.prevent="createFilter">
+        <button class="button__secondary add_filter" @click.prevent="createFilter">
           Přidat filtr
         </button>
       </div>
     </div>
+
     <div>
       <ul class="data-search__filters">
         <li v-for="key in Object.keys(this.filters)" :key="key">
+          <font-awesome-icon :icon="['far', filterTypeName[this.filters[key].type]]" fixed-width />
           {{ key }}: {{ this.filters[key].values.join(', ') }}
           <span @click.stop="removeFilter(key)"><font-awesome-icon :icon="['far', 'times-circle']" class="remove" /></span>
         </li>
@@ -28,6 +30,7 @@
         <button class="button__secondary" @click="toggleModal">zobrazit sloupce</button>
       </div>
     </div>
+
     <div class="content-can-overflow">
       <div class="data-table">
         <table>
@@ -49,6 +52,7 @@
       </div>
     </div>
   </div>
+
   <Modal v-if="modalOpen">
     <div class="modal-body w-400">
       <h3>Zobrazit sloupce</h3>
@@ -104,8 +108,8 @@ export default {
       store: {},
       filtered: false,
       filterTypes: [
-        { key: 'file', value: 'Rozšiřující' },
-        { key: 'copy', value: 'Upřesňující' }
+        { key: 'file', value: 'Rozšiřující', icon: 'expand-alt' },
+        { key: 'copy', value: 'Upřesňující', icon: 'compress-alt' }
       ],
       filters: {},
       filter: {
@@ -141,6 +145,12 @@ export default {
     visibleRows () {
       return this.tableContent.slice(this.sliceStart, 500)
     },
+    filterTypeName () {
+      return this.filterTypes.reduce(
+        (prev, curr) => Object.assign(prev, { [curr.key]: curr.icon }),
+        {}
+      )
+    },
     filterColumns () {
       const columns = []
 
@@ -168,20 +178,21 @@ export default {
             type: this.filter.type
           }
         }
-        console.log(this.filter)
+
         if (this.filter.search.includes(',')) {
           const filterArray = this.filter.search.split(',')
           this.filters[this.filter.field].values.push(...filterArray)
         } else {
           this.filters[this.filter.field].values.push(this.filter.search.toString())
         }
+
+        this.filter.search = ''
       }
     },
     filterData () {
       this.setCopyContent()
+
       for (const key in this.filters) {
-        console.log(key, this.filters[key])
-        console.log(this.filters[key].type, this.filters[key].values)
         this.copy.content = this[this.filters[key].type].content.filter((row) => {
           const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
           if (rowKeyToString && this.filters[key].values.some((item) => rowKeyToString.includes(item.trim().toUpperCase()))) {
@@ -232,6 +243,7 @@ export default {
         } else if (typeof a[column] === 'string') {
           const stringA = a[column]?.toUpperCase()
           const stringB = b[column]?.toUpperCase()
+
           if (stringA < stringB) return -1
           if (stringA > stringB) return 1
           return 0
@@ -254,15 +266,12 @@ export default {
       }
     },
     setFilterType ({ column }) {
-      console.log(column.key)
       this.filter.type = column.key
     },
     saveFile () {
       this.store.set({ key: 'copy', value: this.copy })
       this.store.set({ key: 'filters', value: this.filters })
     }
-
   }
-
 }
 </script>
