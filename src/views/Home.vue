@@ -3,8 +3,8 @@
     <div>
       <div id="data-search">
         <label for="search" class="data-search__search">
-          <font-awesome-icon :icon="['far', 'search']" />
           <input id="search" type="text" placeholder="Vyhledávat" v-model="filter.search">
+          <font-awesome-icon :icon="['far', 'search']" />
         </label>
         <Select :columns="file.columns" v-on:new-value="setFilterField">
           <font-awesome-icon :icon="['far', 'columns']" />

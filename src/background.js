@@ -15,7 +15,7 @@ protocol.registerSchemesAsPrivileged([
 const store = new Store({
   fileName: 'spring-settings.json',
   defaults: {
-    windowBounds: { width: 1280, height: 600 }
+    windowBounds: { width: 1024, height: 768 }
   }
 })
 
@@ -28,6 +28,8 @@ async function createWindow() {
   win = new BrowserWindow({
     width: width,
     height: height,
+    minWidth: 1024,
+    minHeight: 768,
     webPreferences: {
       enableRemoteModule: true,
       // Use pluginOptions.nodeIntegration, leave this alone
