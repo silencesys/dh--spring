@@ -4,9 +4,6 @@ export default {
   mounted () {
     if (this.currentFile) {
       this.loadFileContent()
-      if (this.loadInMounted && typeof this.loadInMounted === 'function') {
-        this.loadInMounted()
-      }
     }
   },
 
@@ -25,6 +22,9 @@ export default {
       const file = this.store.get()
       this.file.columns = file.columns.filter(Boolean)
       this.file.content = file.content
+      if (this.loadInMounted && typeof this.loadInMounted === 'function') {
+        this.loadInMounted()
+      }
     },
   }
 }

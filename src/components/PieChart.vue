@@ -35,6 +35,10 @@ export default {
     Select
   },
 
+  watch: {
+    currentFile: 'loadFileContent',
+  },
+
   mixins: [fileOperations, chartOperations],
 
   beforeUnmount () {

@@ -3,7 +3,7 @@
     <div>
       <div id="data-search">
         <label for="search" class="data-search__search">
-          <input id="search" type="text" placeholder="Vyhledávat" v-model="filter.search">
+          <input id="search" type="text" placeholder='Vyhledávat, "heslo" upřesňuje vyhledávání' v-model="filter.search">
           <font-awesome-icon :icon="['far', 'search']" />
         </label>
         <Select :columns="file.columns" v-on:new-value="setFilterField">
@@ -195,7 +195,13 @@ export default {
       for (const key in this.filters) {
         this.copy.content = this[this.filters[key].type].content.filter((row) => {
           const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
-          if (rowKeyToString && this.filters[key].values.some((item) => rowKeyToString.includes(item.trim().toUpperCase()))) {
+          if (rowKeyToString && this.filters[key].values.some((item) => {
+            if (item.includes('"')) {
+              return rowKeyToString.includes(item.trim().replaceAll('"', '').toUpperCase())
+            } else {
+              return rowKeyToString.find(a => a.includes(item.trim().toUpperCase()))
+            }
+          })) {
             return row
           }
           return false

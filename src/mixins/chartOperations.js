@@ -81,10 +81,14 @@ export default {
     countDuplicity (field = 'Soudce') {
       const counts = this.graphRows.reduce(
         (current, previous) => {
-          return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
+          if (!this.graph.ignore.includes('' + previous[this.graph.ignore_column])) {
+            return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
+          }
+          return Object.assign(current)
         }
         , {}
       )
+
       const data = Object.entries(counts).map(([name, count]) => {
         if (name !== 'undefined' && name.length !== 0) {
           return { category: name, value: count }
@@ -107,6 +111,20 @@ export default {
     },
     keyIsUndefined (key) {
       return key === 'undefined' || key === undefined || key === '' || key.length === 0
+    },
+    prepareIgnoredKeys () {
+      const { ignore_column } = this.graph
+      this.graph.ignore_columns = this.graphRows.reduce((object, value) => {
+        if (!this.keyIsUndefined(value[ignore_column])) {
+          object[value[ignore_column]] = object[value[ignore_column]] || []
+          if (!object[value[ignore_column]]) {
+            object[value[ignore_column]] = 1
+          } else {
+            object[value[ignore_column]]++
+          }
+        }
+        return object
+      }, Object.create(null))
     },
     prepareKeys () {
       const { type, category } = this.graph

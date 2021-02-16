@@ -3,6 +3,16 @@
       <Select :columns="file.columns" :current-value="graph.type" v-on:new-value="({column}) => setGraph('type', column)"></Select>
       <Select :columns="categoryColumns" :current-value="graph.category" v-on:new-value="({column}) => setGraph('category', column)"></Select>
       <Select v-if="graph.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
+      <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => setGraph('ignore_column', column)"></Select>
+      <div></div>
+      <div v-if="graph.category === 'Četnost'" class="chart-tag-filter__wrapper">
+        <ul class="chart-tag-filter">
+          <li v-for="column in Object.keys(graph.ignore_columns)" :key="column + chartFilterTags[column].icon" :class="chartFilterTags[column].elementClass">
+            {{ column }}
+            <span @click.stop="toggleValue(column)"><font-awesome-icon :icon="['far', chartFilterTags[column].icon]" :class="chartFilterTags[column].class" /></span>
+          </li>
+        </ul>
+      </div>
     </div>
     <div style="height: 100%;">
       <div id="axis-chart" style="height: 100%;" />
@@ -13,11 +23,13 @@
 import * as am4core from "@amcharts/amcharts4/core"
 import * as am4charts from "@amcharts/amcharts4/charts"
 import am4themes_animated from "@amcharts/amcharts4/themes/animated"
+import darkThemeArmCharts from '@/utils/amChartsTheme'
 import fileOperations from '@/mixins/fileOperations'
 import chartOperations from '@/mixins/chartOperations'
 import Select from '@/components/Select'
 
 am4core.useTheme(am4themes_animated)
+am4core.useTheme(darkThemeArmCharts)
 
 export default {
 
@@ -28,6 +40,10 @@ export default {
     },
   },
 
+  emits: {
+    click: null
+  },
+
   mixins: [fileOperations, chartOperations],
 
   components: {
@@ -36,6 +52,10 @@ export default {
 
   beforeUnmount () {
     this.chart.dispose()
+  },
+
+  watch: {
+    currentFile: 'loadFileContent',
   },
 
   data () {
@@ -51,7 +71,10 @@ export default {
       graph: {
         type: null,
         category: null,
-        keys: []
+        keys: [],
+        ignore_column: null,
+        ignore_columns: [],
+        ignore: []
       }
     }
   },
@@ -59,9 +82,22 @@ export default {
   computed: {
     categoryColumns () {
       const columns = [...this.file.columns]
-      columns.push('Četnost')
+      columns.unshift('Četnost')
 
       return columns
+    },
+    chartFilterTags () {
+      if (this.graph.ignore_columns) {
+        return Object.keys(this.graph.ignore_columns).reduce((previous, current) => {
+          const ignored = this.graph.ignore.includes(current)
+          return Object.assign(previous, { [current]: {
+            icon: ignored ? 'plus-circle' : 'times-circle',
+            class: ignored ? 'add' : 'remove',
+            elementClass: ignored ? 'chart-tag-filter--hidden' : 'chart-tag-filter--visible'
+          } })
+        }, {})
+      }
+      return []
     }
   },
 
@@ -69,11 +105,34 @@ export default {
     loadInMounted () {
       this.prepareFileContent()
       this.setGraph('type', this.file.columns[0])
-      this.setGraph('category', this.file.columns[1])
+      this.setGraph('category', 'Četnost')
+      this.setGraph('ignore_column', this.file.columns[1])
+      console.log(this.chartFilterTags)
+    },
+    toggleValue (value) {
+      const index = this.graph.ignore.findIndex(item => item === value)
+      console.log(index)
+      if (index > -1) {
+        this.graph.ignore.splice(index, 1)
+      } else {
+        this.graph.ignore.push(value)
+      }
+
+      if (this.chart !== null) {
+        this.chart.dispose()
+      }
+
+      console.log(this.graph.ignore)
+
+      this.createAxisChart()
     },
     setGraph (field, value) {
       this.graph[field] = value
-      this.prepareKeys()
+      if (field === 'ignore_column') {
+        this.prepareIgnoredKeys()
+      } else {
+        this.prepareKeys()
+      }
 
       if (field === 'type') {
         this.graph.key = Object.keys(this.graph.keys)[0]
@@ -107,6 +166,7 @@ export default {
       const chart = am4core.create("axis-chart", am4charts.XYChart)
       chart.hiddenState.properties.opacity = 0
       chart.data = data.data
+      chart.allowDecimals = false
 
       const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis())
       categoryAxis.renderer.grid.template.location = 0
@@ -114,9 +174,10 @@ export default {
 
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxis.min = 0
-      valueAxis.max = data.max_value + (data.max_value / 5)
-      valueAxis.strictMinMax = true
-      valueAxis.renderer.minGridDistance = 30
+      valueAxis.max = data.max_value
+      valueAxis.renderer.minGridDistance = 50
+      valueAxis.adjustLabelPrecision = false
+      valueAxis.maxPrecision = 0
 
       if (data.max_value > 100 && data.difference <= 0.5) {
         // axis break
