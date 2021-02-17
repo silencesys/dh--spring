@@ -4,7 +4,10 @@
       <Select :columns="categoryColumns" :current-value="graph.category" v-on:new-value="({column}) => setGraph('category', column)"></Select>
       <Select v-if="graph.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
       <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => setGraph('ignore_column', column)"></Select>
-      <div></div>
+      <div class="chart-range-sliders" v-if="this.graph.dataType === 'date'">
+        <input type="range" min="0" :max="Math.round(fieldRange.length / 2)" v-model="graph.range.from" step="1" class="range range--reverse">
+        <input type="range" :min="Math.round(fieldRange.length / 2)" :max="fieldRange.length - 1" v-model="graph.range.to" step="1" class="range">
+      </div>
       <div class="chart-tag-filter__wrapper">
         <ul class="chart-tag-filter">
           <li v-for="column in Object.keys(graph.ignore_columns)" :key="column + chartFilterTags[column].icon" :class="chartFilterTags[column].elementClass">
@@ -58,6 +61,10 @@ export default {
 
   watch: {
     currentFile: 'loadFileContent',
+    'graph.range': {
+      deep: true,
+      handler: 'createAxisChart'
+    }
   },
 
   data () {
@@ -67,6 +74,7 @@ export default {
         content: []
       },
       chart: null,
+      chartCursor: null,
       currentChart: {},
       chartData: {},
       graphRows: [],
@@ -77,8 +85,14 @@ export default {
         keys: [],
         ignore_column: null,
         ignore_columns: [],
-        ignore: []
-      }
+        ignore: [],
+        dataType: 'text',
+        range: {
+          from: 0,
+          to: 0,
+        }
+      },
+      timeout: 0
     }
   },
 
@@ -101,15 +115,39 @@ export default {
         }, {})
       }
       return []
+    },
+    fieldRange () {
+      let items = []
+      const allocatedDates = []
+
+      if (this.graph.dataType === 'date') {
+        items = this.graphRows.map(item => {
+          if (item[this.graph.type]) {
+            const date = this.convertCzechDateStringToUniversal(item[this.graph.type])
+            if (allocatedDates.indexOf(item[this.graph.type]) < 0) {
+              allocatedDates.push(item[this.graph.type])
+              return date
+            }
+          }
+          return ''
+        })
+        items = items.filter(Boolean)
+        items = items.sort((a, b) => {
+          return a - b
+        })
+      }
+
+      return items
     }
   },
 
   methods: {
     loadAfterFile () {
       this.prepareFileContent()
-      this.setGraph('type', 'Age')// this.file.columns[0])
-      this.setGraph('category', 'Gender') // 'Četnost')
+      this.setGraph('type', this.file.columns[0])
+      this.setGraph('category', 'Četnost')
       this.setGraph('ignore_column', this.file.columns[1])
+      this.graph.range.to = this.fieldRange.length - 1
     },
     toggleValue (value) {
       const index = this.graph.ignore.findIndex(item => item === value)
@@ -119,13 +157,10 @@ export default {
         this.graph.ignore.push(value)
       }
 
-      if (this.chart !== null) {
-        this.chart.dispose()
-      }
-
       this.createAxisChart()
     },
     setGraph (field, value) {
+      clearTimeout(this.timeout)
       this.graph[field] = value
       if (field === 'ignore_column' || field === 'category') {
         this.prepareIgnoredKeys(value)
@@ -136,16 +171,27 @@ export default {
       if (field === 'type') {
         // this.totalInCategory = this.countPercents(value)
         this.graph.key = Object.keys(this.graph.keys)[0]
-        this.setGraph('key', Object.keys(this.graph.keys)[0])
+        this.checkDataType(value)
+        return this.setGraph('key', Object.keys(this.graph.keys)[0])
       }
 
+      this.timeout = setTimeout(() => {
+        this.createAxisChart()
+      }, 100)
+    },
+    checkDataType (field) {
+      const index = this.file.setDataTypes.findIndex(item => item.name === field)
+      if (index > -1) {
+        this.graph.dataType = this.file.setDataTypes[index].type.key
+      } else {
+        this.graph.dataType = 'text'
+      }
+    },
+    createAxisChart () {
       if (this.chart !== null) {
         this.chart.dispose()
       }
 
-      this.createAxisChart()
-    },
-    createAxisChart () {
       let data = {
         data: []
       }
@@ -178,6 +224,7 @@ export default {
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxis.min = 0
       valueAxis.max = data.max_value
+      valueAxis.extraMax = 0.1;
       valueAxis.renderer.minGridDistance = 50
       valueAxis.adjustLabelPrecision = false
       valueAxis.maxPrecision = 0
@@ -199,14 +246,39 @@ export default {
         axisBreak.defaultState.transitionDuration = 1000
       }
 
+      const chartConstructor = {
+        date: 'drawDateChart',
+        text: 'drawBarChart'
+      }
+
+      this[chartConstructor[this.graph.dataType]](chart)
+    },
+    drawDateChart (chart) {
+      const series = chart.series.push(new am4charts.LineSeries())
+      series.dataFields.categoryX = "category"
+      series.dataFields.valueY = "value"
+      series.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
+      series.legendSettings.itemValueText = "{valueY.percent}%"
+      series.calculatePercent = true
+      series.smoothing = "monotoneX"
+
+      const bullet = series.bullets.push(new am4charts.CircleBullet())
+      bullet.circle.stroke = am4core.color("#fff")
+      bullet.circle.strokeWidth = 2
+      bullet.circle.radius = 7;
+      bullet.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
+
+      this.chart = chart
+    },
+    drawBarChart (chart) {
       const series = chart.series.push(new am4charts.ColumnSeries())
       series.dataFields.categoryX = "category"
       series.dataFields.valueY = "value"
       // series.columns.template.tooltipText = "{categoryX}: {valueY.value}"
-      series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})";
-      series.legendSettings.itemValueText = "{valueY.percent}%";
+      series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
       series.columns.template.tooltipY = 0
       series.columns.template.strokeOpacity = 0
+      series.legendSettings.itemValueText = "{valueY.percent}%"
       series.calculatePercent = true
 
 

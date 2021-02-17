@@ -19,8 +19,8 @@ body {
   --modal-bg: rgba(24, 29, 51, 50%);
 }
 
-body.theme-system {
-  @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
+  body.theme-system {
     --white-bg: #232834;
     --white: #fff;
 

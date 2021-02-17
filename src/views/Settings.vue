@@ -34,6 +34,31 @@
           </li>
         </ul>
       </div>
+      <div class="settings__arrayable-columns__form">
+        <h3 class="settings-section__sub-title">
+          Datové typy sloupců
+        </h3>
+        <p class="settings-section__description">
+          Zde lze nastavit různé datové typy pro jednotlivé sloupce. To usnadní filtrování výsledků a umožní
+          pokročilé možnosti práce s těmito sloupci.
+        </p>
+        <Select :columns="file.columns" v-model="dataTypes.selected.name" />
+        <div class="settings__arrayable-columns__inline-elements">
+          <Select :columns="dataTypes.available" v-model="dataTypes.selected.type" style="max-width: 50%;" />
+          <button @click.stop="markAsDataType" class="button__primary">Nastavit datový typ</button>
+        </div>
+        <h3 class="settings-section__sub-title">
+          Nastavené sloupce
+        </h3>
+        <ul class="tag-list">
+          <li v-for="column in dataTypes.set" :key="column.name" class="tag-list__tag">
+            {{ column.name }}, typ: {{ column.type.value }}
+            <span class="tag-list__button tag-list__buton--remove" @click.stop="removeFromDataTypes(column)">
+              <font-awesome-icon :icon="['far', 'times-circle']" />
+            </span>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="settings-section">
       <h2 class="settings-section__title">
@@ -86,6 +111,17 @@ export default {
         name: '',
         shared: true
       },
+      dataTypes: {
+        available: [
+          { key: 'string', value: 'Text' },
+          { key: 'date', value: 'Datum' }
+        ],
+        selected: {
+          name: '',
+          type: { key: 'string', value: 'Text' }
+        },
+        set: []
+      },
       theme: {
         options: [
           { key: 'system', value: 'Systémové'},
@@ -100,6 +136,7 @@ export default {
   methods: {
     loadAfterFile () {
       this.arrayableColumns = this.store.get('arrayableColumns') || []
+      this.dataTypes.set = this.store.get('setDataTypes') || []
     },
     loadAfterAppSettings () {
       const theme = this.appStore.get('theme')
@@ -111,6 +148,7 @@ export default {
     },
     saveFileSettings () {
       this.store.set({ key: 'arrayableColumns', value: this.arrayableColumns })
+      this.store.set({ key: 'setDataTypes', value: this.dataTypes.set })
     },
     markAsArrayable () {
       this.arrayableColumns.push({...this.arrayableColumn})
@@ -126,6 +164,18 @@ export default {
     },
     updateApplicationTheme () {
       this.$emit('theme-change', this.theme.chosen)
+    },
+    markAsDataType () {
+      this.dataTypes.set.push({...this.dataTypes.selected})
+      this.saveFileSettings()
+    },
+    removeFromDataTypes (column) {
+      const index = this.dataTypes.set.findIndex(item => item.name === column.name)
+
+      if (index > -1) {
+        this.dataTypes.set.splice(index, 1)
+        this.saveFileSettings()
+      }
     }
   }
 }

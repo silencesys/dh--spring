@@ -1,5 +1,17 @@
 export default {
   methods: {
+    convertCzechDateStringToUniversal (date) {
+      let convertedDate = date
+
+      if (date.includes('.')) {
+        convertedDate = date.split('.')
+        convertedDate = `${convertedDate[2]}-${convertedDate[1]}-${convertedDate[0]}`
+      }
+
+      convertedDate = new Date(convertedDate)
+
+      return convertedDate
+    },
     prepareFileContent () {
       const fields = this.store.get('arrayableColumns') || []
       const rows = []
@@ -86,7 +98,20 @@ export default {
       return counts;
     },
     countDuplicity (field) {
-      const counts = this.graphRows.reduce(
+      let filteredRows = this.graphRows
+      if (this.graph.dataType === 'date') {
+        filteredRows = this.graphRows.filter(item => {
+          if (this.graph.dataType === 'date') {
+            const date = this.convertCzechDateStringToUniversal(item[field])
+            return date.getTime() >= this.fieldRange[this.graph.range.from]?.getTime() &&
+              date.getTime() <= this.fieldRange[this.graph.range.to]?.getTime();
+          } else {
+            return true
+          }
+        })
+      }
+
+      const counts = filteredRows.reduce(
         (current, previous) => {
           if (!this.graph.ignore.includes('' + previous[this.graph.ignore_column])) {
             return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
@@ -96,7 +121,7 @@ export default {
         , {}
       )
 
-      const data = Object.entries(counts).map(([name, count]) => {
+      let data = Object.entries(counts).map(([name, count]) => {
         if (name !== 'undefined' && name.length !== 0) {
           return { category: name, value: count }
         } else if (name.length !== 0) {
@@ -104,6 +129,14 @@ export default {
         }
         return null
       }).filter(Boolean)
+
+      if (this.graph.dataType === 'date') {
+        data.sort((a, b) => {
+          const aDate = this.convertCzechDateStringToUniversal(a.category)
+          const bDate = this.convertCzechDateStringToUniversal(b.category)
+          return aDate - bDate
+        })
+      }
 
       const max = Math.max.apply(Math, data.map(o => o.value))
       const min = Math.min.apply(Math, data.map(o => o.value))

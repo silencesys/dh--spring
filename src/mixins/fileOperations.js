@@ -20,7 +20,8 @@ export default {
     return {
       file: {
         content: [],
-        columns: []
+        columns: [],
+        setDataTypes: []
       },
       store: {}
     }
@@ -29,9 +30,10 @@ export default {
   methods: {
     loadFileContent () {
       this.store = new Store(`${this.currentFile}.json`)
-      const file = this.store.get()
-      this.file.columns = file.columns.filter(Boolean)
-      this.file.content = file.content
+      const store = this.store.get()
+      this.file.columns = store.columns.filter(Boolean)
+      this.file.content = store.content
+      this.file.setDataTypes = store.setDataTypes || []
       if (this.loadAfterFile && typeof this.loadAfterFile === 'function') {
         this.loadAfterFile()
       } else {
