@@ -5,6 +5,7 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import ExcelHandler from './utils/excel'
 import Store from './Store'
+import storeSettings from './config/store'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
@@ -12,13 +13,7 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
-const store = new Store({
-  fileName: 'spring-settings.json',
-  defaults: {
-    windowBounds: { width: 1024, height: 768 }
-  }
-})
-
+const store = new Store(storeSettings)
 let win
 
 async function createWindow() {

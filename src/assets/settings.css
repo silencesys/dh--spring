@@ -1,4 +1,4 @@
-:root {
+body {
   --white-bg: #fff;
   --white: #fff;
 
@@ -12,15 +12,15 @@
 
   --red-200: #EB9898;
 
-  --green-200: #C3FCDD;
+  --green-200: #69BAA8;
 
   --shadow-sm: 0 3px 6px rgba(0, 42, 110, 6%);
 
   --modal-bg: rgba(24, 29, 51, 50%);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+body.theme-system {
+  @media (prefers-color-scheme: dark) {
     --white-bg: #232834;
     --white: #fff;
 
@@ -38,6 +38,25 @@
 
     --shadow-sm: 0 3px 6px rgba(12, 14, 26, 10%);
   }
+}
+
+body.theme-dark {
+  --white-bg: #232834;
+  --white: #fff;
+
+  --blue-050: #1B1F27;
+  --blue-100: #2A3348;
+  --blue-300: #2F3543;
+  --blue-500: #98B3FF;
+  --blue-700: #444B5F;
+  --blue-800: #BFC9E5;
+  --blue-900: #122462;
+
+  --red-200: #D15D5D;
+
+  --green-200: #7EE095;
+
+  --shadow-sm: 0 3px 6px rgba(12, 14, 26, 10%);
 }
 
 @font-face {

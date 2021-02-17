@@ -5,7 +5,7 @@
       <Select v-if="graph.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
       <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => setGraph('ignore_column', column)"></Select>
       <div></div>
-      <div v-if="graph.category === 'Četnost'" class="chart-tag-filter__wrapper">
+      <div class="chart-tag-filter__wrapper">
         <ul class="chart-tag-filter">
           <li v-for="column in Object.keys(graph.ignore_columns)" :key="column + chartFilterTags[column].icon" :class="chartFilterTags[column].elementClass">
             {{ column }}
@@ -51,7 +51,9 @@ export default {
   },
 
   beforeUnmount () {
-    this.chart.dispose()
+    if (this.chart !== null) {
+      this.chart.dispose()
+    }
   },
 
   watch: {
@@ -68,6 +70,7 @@ export default {
       currentChart: {},
       chartData: {},
       graphRows: [],
+      totalInCategory: {},
       graph: {
         type: null,
         category: null,
@@ -102,16 +105,14 @@ export default {
   },
 
   methods: {
-    loadInMounted () {
+    loadAfterFile () {
       this.prepareFileContent()
-      this.setGraph('type', this.file.columns[0])
-      this.setGraph('category', 'Četnost')
+      this.setGraph('type', 'Age')// this.file.columns[0])
+      this.setGraph('category', 'Gender') // 'Četnost')
       this.setGraph('ignore_column', this.file.columns[1])
-      console.log(this.chartFilterTags)
     },
     toggleValue (value) {
       const index = this.graph.ignore.findIndex(item => item === value)
-      console.log(index)
       if (index > -1) {
         this.graph.ignore.splice(index, 1)
       } else {
@@ -122,19 +123,18 @@ export default {
         this.chart.dispose()
       }
 
-      console.log(this.graph.ignore)
-
       this.createAxisChart()
     },
     setGraph (field, value) {
       this.graph[field] = value
-      if (field === 'ignore_column') {
-        this.prepareIgnoredKeys()
+      if (field === 'ignore_column' || field === 'category') {
+        this.prepareIgnoredKeys(value)
       } else {
         this.prepareKeys()
       }
 
       if (field === 'type') {
+        // this.totalInCategory = this.countPercents(value)
         this.graph.key = Object.keys(this.graph.keys)[0]
         this.setGraph('key', Object.keys(this.graph.keys)[0])
       }
@@ -155,10 +155,13 @@ export default {
         this.prepareKeys()
         for (const item in this.graph.keys[this.graph.key]) {
           if (item) {
-            data.data.push({
-              category: item,
-              value: this.graph.keys[this.graph.key][item]
-            })
+            if (!this.graph.ignore.includes(item)) {
+              console.log(item, this.graph.keys[this.graph.key][item])
+              data.data.push({
+                category: item,
+                value: this.graph.keys[this.graph.key][item] // / this.totalInCategory[this.graph.key]) * 100
+              })
+            }
           }
         }
       }
@@ -199,9 +202,13 @@ export default {
       const series = chart.series.push(new am4charts.ColumnSeries())
       series.dataFields.categoryX = "category"
       series.dataFields.valueY = "value"
-      series.columns.template.tooltipText = "{categoryX}: {valueY.value}"
+      // series.columns.template.tooltipText = "{categoryX}: {valueY.value}"
+      series.columns.template.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})";
+      series.legendSettings.itemValueText = "{valueY.percent}%";
       series.columns.template.tooltipY = 0
       series.columns.template.strokeOpacity = 0
+      series.calculatePercent = true
+
 
       series.columns.template.adapter.add("fill", (fill, target) => {
         return chart.colors.getIndex(target.dataItem.index)

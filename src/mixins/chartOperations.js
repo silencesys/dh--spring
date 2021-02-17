@@ -1,10 +1,7 @@
 export default {
   methods: {
     prepareFileContent () {
-      const fields = [
-        { name: 'Jména', shared: false },
-        { name: 'Trest', shared: true }
-      ]
+      const fields = this.store.get('arrayableColumns') || []
       const rows = []
 
       this.file.content.forEach((row) => {
@@ -78,7 +75,17 @@ export default {
 
       this.graphRows = rows
     },
-    countDuplicity (field = 'Soudce') {
+    countPercents (field) {
+      const counts = this.graphRows.reduce(
+        (current, previous) => {
+            return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
+        }
+        , {}
+      )
+
+      return counts;
+    },
+    countDuplicity (field) {
       const counts = this.graphRows.reduce(
         (current, previous) => {
           if (!this.graph.ignore.includes('' + previous[this.graph.ignore_column])) {
@@ -112,8 +119,7 @@ export default {
     keyIsUndefined (key) {
       return key === 'undefined' || key === undefined || key === '' || key.length === 0
     },
-    prepareIgnoredKeys () {
-      const { ignore_column } = this.graph
+    prepareIgnoredKeys (ignore_column) {
       this.graph.ignore_columns = this.graphRows.reduce((object, value) => {
         if (!this.keyIsUndefined(value[ignore_column])) {
           object[value[ignore_column]] = object[value[ignore_column]] || []

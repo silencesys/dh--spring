@@ -42,7 +42,9 @@ export default {
   mixins: [fileOperations, chartOperations],
 
   beforeUnmount () {
-    this.chart.dispose()
+    if (this.chart !== null) {
+      this.chart.dispose()
+    }
   },
 
   data () {
@@ -66,7 +68,7 @@ export default {
   },
 
   methods: {
-    loadInMounted () {
+    loadAfterFile () {
       this.prepareFileContent()
       this.setGraph('type', this.file.columns[0])
       this.setGraph('category', this.file.columns[1])

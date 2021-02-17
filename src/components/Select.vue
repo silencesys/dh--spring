@@ -1,5 +1,5 @@
 <template>
-  <div :class="['select', { 'select-active': visible}]" v-click-outside="hideSelect">
+  <div :class="['select', { 'select--active': visible}]" v-click-outside="hideSelect">
     <div class="select__choice" @click="toggleSelect">
       <slot></slot>
       {{ selected }}
@@ -32,6 +32,10 @@ export default {
       type: [String, Number, Boolean],
       default: null
     },
+    modelValue: {
+      type: [ String, Boolean, Object ],
+      default: false
+    },
   },
 
   data () {
@@ -41,10 +45,16 @@ export default {
     }
   },
 
+  computed: {
+    scopedValue () {
+      return this.modelValue.key || this.currentValue
+    }
+  },
+
   mounted () {
-    if (this.currentValue) {
+    if (this.scopedValue) {
       if (this.isObject(this.columns[0])) {
-        const index = this.columns.findIndex(item => item.key === this.currentValue)
+        const index = this.columns.findIndex(item => item.key === this.scopedValue)
         if (index > -1) {
           this.selected = this.columns[index].value
         }
@@ -74,6 +84,7 @@ export default {
     select (column) {
       this.selected = column.value || column
       this.$emit('new-value', { column })
+      this.$emit('update:modelValue', column)
       this.toggleSelect()
     },
     isObject (item) {
