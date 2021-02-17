@@ -12,6 +12,7 @@ import { Quasar, QVirtualScroll } from 'quasar'
 import clickOutside from './directives/click-outside'
 import './assets/settings.css'
 import './assets/main.css'
+import './assets/responsive.css'
 
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,

@@ -1,0 +1,11 @@
+@media (max-width: 1366px) {
+/*
+  Settings
+*/
+.settings-section {
+  grid-template-columns: 1fr;
+}
+.settings-section__title {
+  grid-column-end: 2;
+}
+}

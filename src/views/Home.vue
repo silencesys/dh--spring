@@ -1,9 +1,9 @@
 <template>
   <div class="content-grid">
     <div>
-      <div id="data-search">
+      <div id="data-search" class="document-filter">
         <label for="search" class="data-search__search">
-          <input id="search" type="text" placeholder="Vyhledávat" v-model="filter.search">
+          <input id="search" type="text" placeholder='Vyhledávat, "heslo" upřesňuje vyhledávání' v-model="filter.search">
           <font-awesome-icon :icon="['far', 'search']" />
         </label>
         <Select :columns="file.columns" v-on:new-value="setFilterField">
@@ -26,12 +26,12 @@
           <span @click.stop="removeFilter(key)"><font-awesome-icon :icon="['far', 'times-circle']" class="remove" /></span>
         </li>
       </ul>
-      <div class="field-settings">
+      <div v-if="file.columns.length > 0" class="field-settings">
         <button class="button__secondary" @click="toggleModal">zobrazit sloupce</button>
       </div>
     </div>
 
-    <div class="content-can-overflow">
+    <div v-if="currentFile" class="content-can-overflow">
       <div class="data-table">
         <table>
           <thead>
@@ -51,6 +51,7 @@
         </table>
       </div>
     </div>
+    <ChooseFile v-else />
   </div>
 
   <Modal v-if="modalOpen">
@@ -74,6 +75,7 @@
 import Store from '@/Store'
 import Select from '@/components/Select.vue'
 import Modal from '@/components/Modal.vue'
+import ChooseFile from '@/components/ChooseFile.vue'
 
 export default {
   name: 'Home',
@@ -91,7 +93,8 @@ export default {
 
   components: {
     Select,
-    Modal
+    Modal,
+    ChooseFile
   },
 
   data () {
@@ -195,7 +198,13 @@ export default {
       for (const key in this.filters) {
         this.copy.content = this[this.filters[key].type].content.filter((row) => {
           const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
-          if (rowKeyToString && this.filters[key].values.some((item) => rowKeyToString.includes(item.trim().toUpperCase()))) {
+          if (rowKeyToString && this.filters[key].values.some((item) => {
+            if (item.includes('"')) {
+              return rowKeyToString.includes(item.trim().replaceAll('"', '').toUpperCase())
+            } else {
+              return rowKeyToString.find(a => a.includes(item.trim().toUpperCase()))
+            }
+          })) {
             return row
           }
           return false

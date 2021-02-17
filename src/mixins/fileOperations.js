@@ -4,8 +4,14 @@ export default {
   mounted () {
     if (this.currentFile) {
       this.loadFileContent()
-      if (this.loadInMounted && typeof this.loadInMounted === 'function') {
-        this.loadInMounted()
+    }
+  },
+
+  watch: {
+    'currentFile': function (current) {
+      if (current) {
+        console.log(current)
+        this.loadFileContent()
       }
     }
   },
@@ -15,7 +21,8 @@ export default {
       file: {
         content: [],
         columns: []
-      }
+      },
+      store: {}
     }
   },
 
@@ -25,6 +32,11 @@ export default {
       const file = this.store.get()
       this.file.columns = file.columns.filter(Boolean)
       this.file.content = file.content
+      if (this.loadAfterFile && typeof this.loadAfterFile === 'function') {
+        this.loadAfterFile()
+      } else {
+        console.info('If you want to load any content after file has been loaded, please use loadAfterFile() method.')
+      }
     },
   }
 }
