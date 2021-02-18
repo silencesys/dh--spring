@@ -47,7 +47,10 @@ export default {
 
   computed: {
     scopedValue () {
-      return this.modelValue.key || this.currentValue
+      if (this.modelValue && this.modelValue.key) {
+        return this.modelValue.key
+      }
+      return this.modelValue || this.currentValue
     }
   },
 
@@ -55,24 +58,25 @@ export default {
     if (this.scopedValue) {
       if (this.isObject(this.columns[0])) {
         const index = this.columns.findIndex(item => item.key === this.scopedValue)
+        console.log(index)
         if (index > -1) {
           this.selected = this.columns[index].value
         }
       } else {
-        this.selected = this.currentValue
+        this.selected = this.scopedValue
       }
     }
   },
 
   updated () {
-    if (this.currentValue) {
+    if (this.scopedValue) {
       if (this.isObject(this.columns[0])) {
-        const index = this.columns.findIndex(item => item.key === this.currentValue)
+        const index = this.columns.findIndex(item => item.key === this.scopedValue)
         if (index > -1) {
           this.selected = this.columns[index].value
         }
       } else {
-        this.selected = this.currentValue
+        this.selected = this.scopedValue
       }
     }
   },

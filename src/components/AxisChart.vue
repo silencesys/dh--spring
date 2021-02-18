@@ -1,21 +1,26 @@
 <template>
     <div class="graph-selectors">
-      <Select :columns="file.columns" :current-value="graph.type" v-on:new-value="({column}) => setGraph('type', column)"></Select>
-      <Select :columns="categoryColumns" :current-value="graph.category" v-on:new-value="({column}) => setGraph('category', column)"></Select>
-      <Select v-if="graph.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
-      <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => setGraph('ignore_column', column)"></Select>
+      <Select :columns="file.columns" v-model="chart.filters.category" @update:modelValue="(value) => setChartFilterCategory(value)" />
+      <Select :columns="valueColumns" v-model="chart.filters.value" @update:modelValue="(value) => setChartFilterValue(value)" />
+      <Select :columns="subCategories" v-model="chart.filters.subCategory" @update:modelValue="(value) => setChartFilterSubCategory(value)" />
+      <!-- <Select :columns="valueColumns" :current-value="graph.category" v-on:new-value="({column}) => drawChart('value', column)"></Select>
+      <Select v-if="chart.filters.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => drawChart('subCategory', column)"></Select>
+      <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => drawChart('ignoredColumn', column)"></Select>
       <div class="chart-range-sliders" v-if="this.graph.dataType === 'date'">
         <input type="range" min="0" :max="Math.round(fieldRange.length / 2)" v-model="graph.range.from" step="1" class="range range--reverse">
         <input type="range" :min="Math.round(fieldRange.length / 2)" :max="fieldRange.length - 1" v-model="graph.range.to" step="1" class="range">
       </div>
-      <div class="chart-tag-filter__wrapper">
-        <ul class="chart-tag-filter">
-          <li v-for="column in Object.keys(graph.ignore_columns)" :key="column + chartFilterTags[column].icon" :class="chartFilterTags[column].elementClass">
-            {{ column }}
-            <span @click.stop="toggleValue(column)"><font-awesome-icon :icon="['far', chartFilterTags[column].icon]" :class="chartFilterTags[column].class" /></span>
-          </li>
-        </ul>
-      </div>
+       -->
+    <div class="chart-tag-filter__wrapper">
+      <ul class="chart-tag-filter">
+        <li v-for="value in values" :key="value + ignoredValuesStates[value].icon" :class="ignoredValuesStates[value].elementClass">
+          {{ value }}
+          <span @click.stop="toggleValue(value)">
+            <font-awesome-icon :icon="['far', ignoredValuesStates[value].icon]" :class="ignoredValuesStates[value].class" />
+          </span>
+        </li>
+      </ul>
+    </div>
     </div>
     <div style="height: 100%;">
       <div id="axis-chart" style="height: 100%;" />
@@ -54,27 +59,15 @@ export default {
   },
 
   beforeUnmount () {
-    if (this.chart !== null) {
-      this.chart.dispose()
-    }
+    this.disposeExistingChartInstance()
   },
 
   watch: {
     currentFile: 'loadFileContent',
-    'graph.range': {
-      deep: true,
-      handler: 'createAxisChart'
-    }
   },
 
   data () {
     return {
-      file: {
-        columns: [],
-        content: []
-      },
-      chart: null,
-      chartCursor: null,
       currentChart: {},
       chartData: {},
       graphRows: [],
@@ -92,166 +85,224 @@ export default {
           to: 0,
         }
       },
-      timeout: 0
+      // New variables
+      drawChartTimeout: 0,
+      file: {
+        columns: [],
+        content: []
+      },
+      chart: {
+        instance: null,
+        filters: {
+          category: null,
+          value: null,
+          subCategory: null,
+          ignoredolumn: null
+        },
+        rows: [],
+        subCategories: [],
+        values: [],
+        ignoredValues: [],
+        categoryDataType: 'text',
+        categoryRange: {
+          from: 0,
+          to: 0
+        }
+      }
     }
   },
 
   computed: {
-    categoryColumns () {
+    valueColumns () {
       const columns = [...this.file.columns]
       columns.unshift('Četnost')
 
       return columns
     },
-    chartFilterTags () {
-      if (this.graph.ignore_columns) {
-        return Object.keys(this.graph.ignore_columns).reduce((previous, current) => {
-          const ignored = this.graph.ignore.includes(current)
+    subCategories () {
+      if (this.chart.filters.value === 'Četnost') {
+        return this.file.columns
+      }
+      return Object.keys(this.chart.subCategories)
+    },
+    values () {
+      return Object.keys(this.chart.values)
+    },
+    ignoredValuesStates () {
+      if (this.values) {
+        return this.values.reduce((previous, current) => {
+          const ignored = this.chart.ignoredValues.includes(current)
           return Object.assign(previous, { [current]: {
             icon: ignored ? 'plus-circle' : 'times-circle',
             class: ignored ? 'add' : 'remove',
             elementClass: ignored ? 'chart-tag-filter--hidden' : 'chart-tag-filter--visible'
-          } })
+          }})
         }, {})
       }
       return []
     },
     fieldRange () {
-      let items = []
-      const allocatedDates = []
+      return []
+      // let items = []
+      // const allocatedDates = []
 
-      if (this.graph.dataType === 'date') {
-        items = this.graphRows.map(item => {
-          if (item[this.graph.type]) {
-            const date = this.convertCzechDateStringToUniversal(item[this.graph.type])
-            if (allocatedDates.indexOf(item[this.graph.type]) < 0) {
-              allocatedDates.push(item[this.graph.type])
-              return date
-            }
-          }
-          return ''
-        })
-        items = items.filter(Boolean)
-        items = items.sort((a, b) => {
-          return a - b
-        })
-      }
+      // if (this.graph.dataType === 'date') {
+      //   items = this.graphRows.map(item => {
+      //     if (item[this.graph.type]) {
+      //       const date = this.convertCzechDateStringToUniversal(item[this.graph.type])
+      //       if (allocatedDates.indexOf(item[this.graph.type]) < 0) {
+      //         allocatedDates.push(item[this.graph.type])
+      //         return date
+      //       }
+      //     }
+      //     return ''
+      //   })
+      //   items = items.filter(Boolean)
+      //   items = items.sort((a, b) => {
+      //     return a - b
+      //   })
+      // }
 
-      return items
+      // return items
     }
   },
 
   methods: {
+    /**
+     * This method is called after successfull loading of the file in
+     * fileOperations mixin. This way we can be sure that the file is already
+     * laoded in the memory and we can work with it.
+     */
     loadAfterFile () {
-      this.prepareFileContent()
-      this.setGraph('type', this.file.columns[0])
-      this.setGraph('category', 'Četnost')
-      this.setGraph('ignore_column', this.file.columns[1])
-      this.graph.range.to = this.fieldRange.length - 1
+      // Prepare rows for chart rendering
+      this.chart.rows = this.prepareRowsForChart(this.file)
+
+      // Set default choices for every select
+      this.setChartFilterCategory(this.file.columns[3])
+      this.setChartFilterValue('Četnost')
+      this.setChartFilterSubCategory(this.subCategories[0])
+
+      // this.graph.range.to = this.fieldRange.length - 1
     },
-    toggleValue (value) {
-      const index = this.graph.ignore.findIndex(item => item === value)
-      if (index > -1) {
-        this.graph.ignore.splice(index, 1)
-      } else {
-        this.graph.ignore.push(value)
-      }
+    /**
+     * Set chart category filter, validate data type and call chart render.
+     *
+     * @param {string} value
+     */
+    setChartFilterCategory (value) {
+      this.chart.filters.category = value
+      this.chart.subCategories = this.countFrequencyBasedOnColumn(this.chart.filters.category, this.chart.rows)
+      this.setChartFilterSubCategory(this.subCategories[0], false)
 
-      this.createAxisChart()
+      this.validateCategoryDataType()
+      this.prepareChartFilters()
     },
-    setGraph (field, value) {
-      clearTimeout(this.timeout)
-      this.graph[field] = value
-      if (field === 'ignore_column' || field === 'category') {
-        this.prepareIgnoredKeys(value)
-      } else {
-        this.prepareKeys()
+    /**
+     * Set chart value filter, set sub-category to the first value and render chart.
+     *
+     * @param {string} value
+     */
+    setChartFilterValue (value) {
+      this.chart.filters.value = value
+      this.chart.values = this.countFrequencyBasedOnColumn(this.chart.filters.value, this.chart.rows)
+      this.setChartFilterSubCategory(this.subCategories[0], false)
+
+      this.prepareChartFilters()
+    },
+    /**
+     * Set chart sub-category filter and render chart.
+     *
+     * @param {string} value
+     */
+    setChartFilterSubCategory (value, drawChart = true) {
+      this.chart.filters.subCategory = value
+
+      if (this.chart.filters.value === 'Četnost') {
+        this.chart.values = this.countFrequencyBasedOnColumn(this.chart.filters.subCategory, this.chart.rows)
       }
 
-      if (field === 'type') {
-        // this.totalInCategory = this.countPercents(value)
-        this.graph.key = Object.keys(this.graph.keys)[0]
-        this.checkDataType(value)
-        return this.setGraph('key', Object.keys(this.graph.keys)[0])
+      if (drawChart) {
+        this.prepareChartFilters()
       }
+    },
+    /**
+     * Prepare chart for rendering.
+     */
+    prepareChartFilters () {
+      // Clear timeout that holds chart drawing
+      clearTimeout(this.drawChartTimeout)
 
-      this.timeout = setTimeout(() => {
-        this.createAxisChart()
+      this.drawChartTimeout = setTimeout(() => {
+        this.drawAxisChart()
       }, 100)
     },
-    checkDataType (field) {
-      const index = this.file.setDataTypes.findIndex(item => item.name === field)
+    /**
+     * Search for category data type in defined data types, so later on we can
+     * render the right chart.
+     */
+    validateCategoryDataType () {
+      const index = this.file.setDataTypes.findIndex(column => column.name === this.chart.filters.category)
+
       if (index > -1) {
-        this.graph.dataType = this.file.setDataTypes[index].type.key
+        this.chart.categoryDataType = this.file.setDataTypes[index].type.key
       } else {
-        this.graph.dataType = 'text'
+        // In case category was not defined in data types, always fallback to text.
+        this.chart.categoryDataType = 'text'
       }
     },
-    createAxisChart () {
-      if (this.chart !== null) {
-        this.chart.dispose()
-      }
-
-      let data = {
-        data: []
-      }
-      if (this.graph.category === 'Četnost') {
-        data = this.countDuplicity(this.graph.type)
-      } else {
-        this.prepareKeys()
-        for (const item in this.graph.keys[this.graph.key]) {
-          if (item) {
-            if (!this.graph.ignore.includes(item)) {
-              console.log(item, this.graph.keys[this.graph.key][item])
-              data.data.push({
-                category: item,
-                value: this.graph.keys[this.graph.key][item] // / this.totalInCategory[this.graph.key]) * 100
-              })
-            }
-          }
+    /**
+     * Dispose any existing chart instance.
+     */
+    disposeExistingChartInstance () {
+      if (this.chart.instance !== null) {
+        try {
+          this.chart.instance.dispose()
+        } catch (error) {
+          console.error('Chart instance could not be disposed!')
+          console.error(error)
         }
       }
+    },
+    drawAxisChart () {
+      this.disposeExistingChartInstance()
+
+      let data = []
+      if (this.chart.filters.value === 'Četnost') {
+        data = this.getFrequency(this.chart)
+      } else {
+        data = this.convertRowsToChartData(this.chart).data
+      }
+
+
 
       const chart = am4core.create("axis-chart", am4charts.XYChart)
       chart.hiddenState.properties.opacity = 0
-      chart.data = data.data
+      chart.data = data
       chart.allowDecimals = false
 
       const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis())
       categoryAxis.renderer.grid.template.location = 0
-      categoryAxis.dataFields.category = "category"
+      categoryAxis.dataFields.category = 'category'
+
+      const max = Math.max.apply(Math, data.map(o => o.value))
 
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis())
       valueAxis.min = 0
-      valueAxis.max = data.max_value
+      valueAxis.max = max
       valueAxis.extraMax = 0.1;
       valueAxis.renderer.minGridDistance = 50
       valueAxis.adjustLabelPrecision = false
       valueAxis.maxPrecision = 0
 
-      if (data.max_value > 100 && data.difference <= 0.5) {
-        // axis break
-        const axisBreak = valueAxis.axisBreaks.create()
-        axisBreak.startValue = data.min_value * 2
-        axisBreak.endValue = data.max_value / 1.1
-        axisBreak.breakSize = data.difference / 2
-
-        chart.yAxes.push(new am4charts.ValueAxis())
-
-        const hoverState = axisBreak.states.create("hover")
-        hoverState.properties.breakSize = 1
-        hoverState.properties.opacity = 0.1
-        hoverState.transitionDuration = 1500
-
-        axisBreak.defaultState.transitionDuration = 1000
-      }
-
+      // Define methods that can be used to draw the chart based on the data type.
       const chartConstructor = {
         date: 'drawDateChart',
         text: 'drawBarChart'
       }
 
-      this[chartConstructor[this.graph.dataType]](chart)
+      // Store the chart instance in the data object, so we can manipulate with
+      // it later on.
+      this.chart.instance = this[chartConstructor[this.chart.categoryDataType]](chart)
     },
     drawDateChart (chart) {
       const series = chart.series.push(new am4charts.LineSeries())
@@ -268,7 +319,7 @@ export default {
       bullet.circle.radius = 7;
       bullet.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
 
-      this.chart = chart
+      return chart
     },
     drawBarChart (chart) {
       const series = chart.series.push(new am4charts.ColumnSeries())
@@ -286,8 +337,18 @@ export default {
         return chart.colors.getIndex(target.dataItem.index)
       });
 
-      this.chart = chart
-    }
+      return chart
+    },
+    toggleValue (value) {
+      const index = this.chart.ignoredValues.findIndex(item => item === value)
+      if (index > -1) {
+        this.chart.ignoredValues.splice(index, 1)
+      } else {
+        this.chart.ignoredValues.push(value)
+      }
+
+      this.prepareChartFilters()
+    },
   }
 
 }

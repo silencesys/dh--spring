@@ -21,7 +21,8 @@ export default {
       file: {
         content: [],
         columns: [],
-        setDataTypes: []
+        setDataTypes: [],
+        arrayableColumns: []
       },
       store: {}
     }
@@ -34,6 +35,7 @@ export default {
       this.file.columns = store.columns.filter(Boolean)
       this.file.content = store.content
       this.file.setDataTypes = store.setDataTypes || []
+      this.file.arrayableColumns = store.arrayableColumns || []
       if (this.loadAfterFile && typeof this.loadAfterFile === 'function') {
         this.loadAfterFile()
       } else {
