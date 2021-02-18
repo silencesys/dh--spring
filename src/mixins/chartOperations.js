@@ -1,102 +1,5 @@
 export default {
   methods: {
-    prepareFileContent () {
-      console.warning('Method prepareFileContent() is deprecated, use prepareRowsForChart(file) instead.')
-      return this.prepareRowsForCharts({...this.file })
-    },
-    countPercents (field) {
-      const counts = this.graphRows.reduce(
-        (current, previous) => {
-            return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
-        }
-        , {}
-      )
-
-      return counts;
-    },
-    countDuplicity (field) {
-      let filteredRows = this.graphRows
-      if (this.graph.dataType === 'date') {
-        filteredRows = this.graphRows.filter(item => {
-          if (this.graph.dataType === 'date') {
-            const date = this.convertCzechDateStringToUniversal(item[field])
-            return date.getTime() >= this.fieldRange[this.graph.range.from]?.getTime() &&
-              date.getTime() <= this.fieldRange[this.graph.range.to]?.getTime();
-          } else {
-            return true
-          }
-        })
-      }
-
-      const counts = filteredRows.reduce(
-        (current, previous) => {
-          if (!this.graph.ignore.includes('' + previous[this.graph.ignore_column])) {
-            return Object.assign(current, {[previous[field]]: (current[previous[field]] || 0) + 1})
-          }
-          return Object.assign(current)
-        }
-        , {}
-      )
-
-      let data = Object.entries(counts).map(([name, count]) => {
-        if (name !== 'undefined' && name.length !== 0) {
-          return { category: name, value: count }
-        } else if (name.length !== 0) {
-          return { category: 'Chybí', value: count }
-        }
-        return null
-      }).filter(Boolean)
-
-      if (this.graph.dataType === 'date') {
-        data.sort((a, b) => {
-          const aDate = this.convertCzechDateStringToUniversal(a.category)
-          const bDate = this.convertCzechDateStringToUniversal(b.category)
-          return aDate - bDate
-        })
-      }
-
-      const max = Math.max.apply(Math, data.map(o => o.value))
-      const min = Math.min.apply(Math, data.map(o => o.value))
-      const diff = (min / max)
-
-      return {
-        max_value: max,
-        min_value: min,
-        difference: diff,
-        data
-      }
-    },
-    keyIsUndefined (key) {
-      return key === 'undefined' || key === undefined || key === '' || key.length === 0
-    },
-    prepareIgnoredKeys (ignore_column) {
-      this.graph.ignore_columns = this.graphRows.reduce((object, value) => {
-        if (!this.keyIsUndefined(value[ignore_column])) {
-          object[value[ignore_column]] = object[value[ignore_column]] || []
-          if (!object[value[ignore_column]]) {
-            object[value[ignore_column]] = 1
-          } else {
-            object[value[ignore_column]]++
-          }
-        }
-        return object
-      }, Object.create(null))
-    },
-    prepareKeys () {
-      const { type, category } = this.graph
-      this.graph.keys = this.graphRows.reduce((object, value) => {
-        if (!this.keyIsUndefined(value[type])) {
-          object[value[type]] = object[value[type]] || []
-          if (!object[value[type]][value[category]]) {
-            object[value[type]][value[category]] = 1
-          } else {
-            object[value[type]][value[category]]++
-          }
-        }
-        return object
-      }, Object.create(null))
-    },
-    // Refactored
     prepareRowsForChart ({ content, arrayableColumns }) {
       const rows = []
 
@@ -212,21 +115,33 @@ export default {
 
       return rows
     },
-    countFrequency(rows, ignoredValues, { category, value, subCategory }) {
+    getOnlyUniqueValues (rows, ignoredValues, { category, value, subCategory }, isDateDataType) {
+      const ignoredColumn = value !== 'Četnost' ? category : subCategory
+      const values = rows.map((item) => {
+        if (!ignoredValues.includes(`${'' + item[ignoredColumn]}`)) {
+          return this.convertCzechDateString(item[category], isDateDataType, true)
+        }
+        return null
+      })
+      return values.filter((item, position) => {
+        return values.indexOf(item) === position
+      })
+    },
+    countFrequency (rows, ignoredValues, { category, value, subCategory }, isDateDataType) {
       const ignoredColumn = value !== 'Četnost' ? category : subCategory
       return rows.reduce((current, previous) => {
         if (!ignoredValues.includes(`${'' + previous[ignoredColumn]}`)) {
-          const key = previous[category]
+          const key = this.convertCzechDateString(previous[category], isDateDataType, true)
           return {...current, [key]: (current[key] || 0) + 1}
         }
         return {...current}
       }, {})
     },
-    countSplitFrequency(rows, ignoredValues, { category, subCategory, value }) {
+    countSplitFrequency(rows, ignoredValues, { category, subCategory, value }, isDateDataType) {
       const ignoredColumn = value !== 'Četnost' ? category : subCategory
       return rows.reduce((current, previous) => {
         if (!ignoredValues.includes(`${'' + previous[ignoredColumn]}`)) {
-          const key = previous[category]
+          const key = this.convertCzechDateString(previous[category], isDateDataType, true)
           const valueKey = previous[subCategory]
           const object = { [valueKey]: (current[valueKey] || {}) }
           object[valueKey][key] = (object[valueKey][key] || 0) + 1
@@ -235,12 +150,12 @@ export default {
         return { ...current }
       }, {})
     },
-    convertKeyValueToChartData (keyValuePairs, sortCallback = null, missingCatName = 'Chybí') {
+    convertKeyValueToChartData (keyValuePairs, sortCallback = null, customValue = 'value', missingCatName = 'Chybí') {
       const chartData = Object.entries(keyValuePairs).map(([category, frequency]) => {
         if (category !== 'undefined' && category.length > 0) {
-          return { category, value: frequency }
+          return { category, [customValue]: frequency }
         } else if (category.length !== 0) {
-          return { category: missingCatName, value: frequency }
+          return { category: missingCatName, [customValue]: frequency }
         }
         return null
       }).filter(Boolean)
@@ -271,14 +186,17 @@ export default {
 
       const availableRows = this.filterRows(rows, filters.category, categoryDataType, categoryRange)
 
+      const isDateDataType = categoryDataType === 'date'
+
       let frequency = []
       if (split) {
-        const splitFrequency = this.countSplitFrequency(availableRows, ignoredValues, filters)
+        const splitFrequency = this.countSplitFrequency(availableRows, ignoredValues, filters, isDateDataType)
         for (const item in splitFrequency) {
-          frequency.push({ [item]: this.convertKeyValueToChartData(splitFrequency[item], this.getSortMethod(categoryDataType)) })
+          frequency.push(...this.convertKeyValueToChartData(splitFrequency[item], null, item))
         }
+        frequency.sort(this.getSortMethod(categoryDataType))
       } else {
-        frequency = this.countFrequency(availableRows, ignoredValues, filters)
+        frequency = this.countFrequency(availableRows, ignoredValues, filters, isDateDataType)
         frequency = this.convertKeyValueToChartData(frequency, this.getSortMethod(categoryDataType))
       }
 
@@ -292,21 +210,37 @@ export default {
       return sortMethod[dataType] || null
     },
     sortByDate (a, b) {
-      console.log(a ,b)
-      const aDate = this.convertCzechDateString(a.category)
-      const bDate = this.convertCzechDateString(b.category)
+      const aDate = this.convertCzechDateString(a.category || a)
+      const bDate = this.convertCzechDateString(b.category || b)
 
       return aDate - bDate
     },
-    convertCzechDateString (date) {
-      let convertedDate = date
+    convertCzechDateString (date, format = false, hasNonDateValues = false) {
+      let convertedDate = '' + date
 
-      if (date.includes('.')) {
-        convertedDate = date.split('.')
+      if (date instanceof Date) {
+        return date
+      }
+
+      if (!format && hasNonDateValues) {
+        return date
+      }
+
+      if (convertedDate.includes('.')) {
+        convertedDate = convertedDate.split('.')
         convertedDate = `${convertedDate[2]}-${convertedDate[1]}-${convertedDate[0]}`
       }
 
+      if (convertedDate.includes(' ') && convertedDate.includes(':')) {
+        convertedDate = convertedDate.split(' ')[0]
+      }
+
       convertedDate = new Date(convertedDate)
+      convertedDate = !isNaN(convertedDate) ? convertedDate : date
+
+      if (format && !isNaN(convertedDate)) {
+        convertedDate = convertedDate.toLocaleString('cs-CZ', { year: 'numeric', month: 'short', day: 'numeric' })
+      }
 
       return convertedDate
     },

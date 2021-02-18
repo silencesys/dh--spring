@@ -111,8 +111,15 @@ ipcMain.handle('open-xslx-file', async (event, path) => {
   const data = await openFile(event, path)
 
   const jsonFile = new Store(`${data.fileName}.json`)
-  jsonFile.set(data)
+  jsonFile.set({ key: 'columns', value: data.columns })
+  jsonFile.set({ key: 'content', value: data.content })
+  jsonFile.set({ key: 'fileName', value: data.fileName })
   store.set({ key: 'lastOpenedFile', value: `${data.fileName}.json` })
+})
+
+ipcMain.handle('export-chart', async () => {
+  win.webContents.send('export-chart')
+  return true
 })
 
 ipcMain.handle('last-opened-file', () => {

@@ -1,16 +1,14 @@
 <template>
-    <div class="graph-selectors">
+    <div class="graph-selectors chart-filters">
       <Select :columns="file.columns" v-model="chart.filters.category" @update:modelValue="(value) => setChartFilterCategory(value)" />
       <Select :columns="valueColumns" v-model="chart.filters.value" @update:modelValue="(value) => setChartFilterValue(value)" />
       <Select :columns="subCategories" v-model="chart.filters.subCategory" @update:modelValue="(value) => setChartFilterSubCategory(value)" />
-      <!-- <Select :columns="valueColumns" :current-value="graph.category" v-on:new-value="({column}) => drawChart('value', column)"></Select>
-      <Select v-if="chart.filters.category !== 'Četnost'" :columns="Object.keys(graph.keys)" :current-value="graph.key" v-on:new-value="({column}) => drawChart('subCategory', column)"></Select>
-      <Select v-if="graph.category === 'Četnost'" :columns="file.columns" :current-value="graph.ignore_column" v-on:new-value="({column}) => drawChart('ignoredColumn', column)"></Select>
-      <div class="chart-range-sliders" v-if="this.graph.dataType === 'date'">
-        <input type="range" min="0" :max="Math.round(fieldRange.length / 2)" v-model="graph.range.from" step="1" class="range range--reverse">
-        <input type="range" :min="Math.round(fieldRange.length / 2)" :max="fieldRange.length - 1" v-model="graph.range.to" step="1" class="range">
+      <div class="chart-range-sliders" v-if="this.chart.categoryDataType === 'date'">
+        <span>{{ fieldRange[0] }}</span>
+        <Slider :min="0" :max="fieldRange.length - 1" v-model="range" :step="1" style="width: 100%" :tooltips="false" />
+        <span>{{ fieldRange[fieldRange.length - 1] }}</span>
       </div>
-       -->
+      <Toggle v-if="this.chart.categoryDataType === 'date'" el-id="split-values" v-model="this.chart.split" style="justify-self: end;">Rozdělit hodnoty</Toggle>
     <div class="chart-tag-filter__wrapper">
       <ul class="chart-tag-filter">
         <li v-for="value in values" :key="value + ignoredValuesStates[value].icon" :class="ignoredValuesStates[value].elementClass">
@@ -28,6 +26,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import * as am4core from "@amcharts/amcharts4/core"
 import * as am4charts from "@amcharts/amcharts4/charts"
 import am4themes_animated from "@amcharts/amcharts4/themes/animated"
@@ -35,6 +34,8 @@ import darkThemeArmCharts from '@/utils/amChartsTheme'
 import fileOperations from '@/mixins/fileOperations'
 import chartOperations from '@/mixins/chartOperations'
 import Select from '@/components/Select'
+import Toggle from '@/components/Toggle'
+import Slider from '@vueform/slider'
 
 am4core.useTheme(am4themes_animated)
 am4core.useTheme(darkThemeArmCharts)
@@ -55,7 +56,15 @@ export default {
   mixins: [fileOperations, chartOperations],
 
   components: {
-    Select
+    Select, Toggle, Slider
+  },
+
+  mounted () {
+    ipcRenderer.on('export-chart', () => {
+      if (this.chart.instance) {
+        this.chart.instance.exporting.export('png')
+      }
+    });
   },
 
   beforeUnmount () {
@@ -64,34 +73,24 @@ export default {
 
   watch: {
     currentFile: 'loadFileContent',
+    range: {
+      deep: true,
+      handler: 'updateChartRange'
+    },
+    'chart.split': 'prepareChartFilters'
   },
 
   data () {
     return {
-      currentChart: {},
-      chartData: {},
-      graphRows: [],
-      totalInCategory: {},
-      graph: {
-        type: null,
-        category: null,
-        keys: [],
-        ignore_column: null,
-        ignore_columns: [],
-        ignore: [],
-        dataType: 'text',
-        range: {
-          from: 0,
-          to: 0,
-        }
-      },
-      // New variables
       drawChartTimeout: 0,
+      rangeUpdateTimer: 0,
+      range: [0],
       file: {
         columns: [],
         content: []
       },
       chart: {
+        split: false,
         instance: null,
         filters: {
           category: null,
@@ -121,7 +120,7 @@ export default {
     },
     subCategories () {
       if (this.chart.filters.value === 'Četnost') {
-        return this.file.columns
+        return this.file.columns.filter(column => column !== this.chart.filters.category)
       }
       return Object.keys(this.chart.subCategories)
     },
@@ -142,28 +141,16 @@ export default {
       return []
     },
     fieldRange () {
-      return []
-      // let items = []
-      // const allocatedDates = []
-
-      // if (this.graph.dataType === 'date') {
-      //   items = this.graphRows.map(item => {
-      //     if (item[this.graph.type]) {
-      //       const date = this.convertCzechDateStringToUniversal(item[this.graph.type])
-      //       if (allocatedDates.indexOf(item[this.graph.type]) < 0) {
-      //         allocatedDates.push(item[this.graph.type])
-      //         return date
-      //       }
-      //     }
-      //     return ''
-      //   })
-      //   items = items.filter(Boolean)
-      //   items = items.sort((a, b) => {
-      //     return a - b
-      //   })
-      // }
-
-      // return items
+      let range = []
+      if (this.chart.categoryDataType === 'date') {
+        range = this.getOnlyUniqueValues(
+          this.chart.rows,
+          this.chart.ignoredValues,
+          this.chart.filters
+        ).filter(Boolean)
+        range.sort(this.sortByDate)
+      }
+      return range
     }
   },
 
@@ -178,11 +165,23 @@ export default {
       this.chart.rows = this.prepareRowsForChart(this.file)
 
       // Set default choices for every select
-      this.setChartFilterCategory(this.file.columns[3])
+      this.setChartFilterCategory(this.file.columns[0])
       this.setChartFilterValue('Četnost')
       this.setChartFilterSubCategory(this.subCategories[0])
+    },
+    updateChartRange () {
+      clearTimeout(this.rangeUpdateTimer)
 
-      // this.graph.range.to = this.fieldRange.length - 1
+      const previousTo = this.chart.categoryRange.to
+
+      this.chart.categoryRange.from = this.convertCzechDateString(this.fieldRange[this.range[0]])
+      this.chart.categoryRange.to = this.convertCzechDateString(this.fieldRange[this.range[1]])
+
+      if (previousTo !== 0) {
+        this.rangeUpdateTimer = setTimeout(() => {
+          this.prepareChartFilters()
+        }, 500)
+      }
     },
     /**
      * Set chart category filter, validate data type and call chart render.
@@ -195,6 +194,11 @@ export default {
       this.setChartFilterSubCategory(this.subCategories[0], false)
 
       this.validateCategoryDataType()
+
+      if (this.fieldRange.length > 0 && this.range[1] === undefined) {
+        this.range.push(this.fieldRange.length - 1)
+      }
+
       this.prepareChartFilters()
     },
     /**
@@ -257,6 +261,7 @@ export default {
       if (this.chart.instance !== null) {
         try {
           this.chart.instance.dispose()
+          this.chart.instance = null
         } catch (error) {
           console.error('Chart instance could not be disposed!')
           console.error(error)
@@ -268,14 +273,12 @@ export default {
 
       let data = []
       if (this.chart.filters.value === 'Četnost') {
-        data = this.getFrequency(this.chart)
+        data = this.getFrequency(this.chart, this.chart.split)
       } else {
         data = this.convertRowsToChartData(this.chart).data
       }
 
-
-
-      const chart = am4core.create("axis-chart", am4charts.XYChart)
+      const chart = am4core.create('axis-chart', am4charts.XYChart)
       chart.hiddenState.properties.opacity = 0
       chart.data = data
       chart.allowDecimals = false
@@ -294,6 +297,12 @@ export default {
       valueAxis.adjustLabelPrecision = false
       valueAxis.maxPrecision = 0
 
+      const options = chart.exporting.getFormatOptions('png')
+      options.scale = 3
+      options.quality = 1
+      chart.exporting.setFormatOptions('png', options)
+      chart.exporting.backgroundColor = am4core.color("#f00", 0)
+
       // Define methods that can be used to draw the chart based on the data type.
       const chartConstructor = {
         date: 'drawDateChart',
@@ -302,12 +311,13 @@ export default {
 
       // Store the chart instance in the data object, so we can manipulate with
       // it later on.
-      this.chart.instance = this[chartConstructor[this.chart.categoryDataType]](chart)
+      this.chart.instance = this[chartConstructor[this.chart.categoryDataType]](chart, data)
     },
-    drawDateChart (chart) {
+    createSerires(chart, field, name) {
       const series = chart.series.push(new am4charts.LineSeries())
+      series.name = name
       series.dataFields.categoryX = "category"
-      series.dataFields.valueY = "value"
+      series.dataFields.valueY = field
       series.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
       series.legendSettings.itemValueText = "{valueY.percent}%"
       series.calculatePercent = true
@@ -318,6 +328,15 @@ export default {
       bullet.circle.strokeWidth = 2
       bullet.circle.radius = 7;
       bullet.tooltipText = "[bold]{name}[/]\n[font-size:14px]{categoryX}: [bold]{valueY.percent.formatNumber('#.00')}%[/] ({valueY})"
+    },
+    drawDateChart (chart) {
+      if (this.chart.split) {
+        for (const column of Object.keys(this.chart.values)) {
+            this.createSerires(chart, column, column)
+        }
+      } else {
+        this.createSerires(chart, 'value', this.chart.filters.subCategory)
+      }
 
       return chart
     },

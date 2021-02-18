@@ -5,11 +5,12 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt
+  faExpandAlt, faFileExport
 } from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Quasar, QVirtualScroll } from 'quasar'
 import clickOutside from './directives/click-outside'
+import '@vueform/slider/themes/default.css'
 import './assets/settings.css'
 import './assets/main.css'
 import './assets/responsive.css'
@@ -17,7 +18,7 @@ import './assets/responsive.css'
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt
+  faExpandAlt, faFileExport
 )
 
 const app = createApp(App)

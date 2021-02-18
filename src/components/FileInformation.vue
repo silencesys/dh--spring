@@ -3,9 +3,14 @@
     <h3 class="app-fileinfo__filename">
       {{ fileName  || 'žádný soubor nebyl vybrán' }}
     </h3>
-    <button class="button__round" @click.prevent="openXslxFile"><!--
-      --><font-awesome-icon :icon="['far', 'folder-open']" /><!--
-    --></button>
+    <div>
+      <button class="button__round" style="margin-right: 1rem;" @click.prevent="exportChart"><!--
+        --><font-awesome-icon :icon="['far', 'file-export']" /><!--
+      --></button>
+      <button class="button__round" @click.prevent="openXslxFile"><!--
+        --><font-awesome-icon :icon="['far', 'folder-open']" /><!--
+      --></button>
+    </div>
   </div>
 </template>
 
@@ -23,6 +28,9 @@ export default {
   },
 
   methods: {
+    async exportChart () {
+      ipcRenderer.invoke('export-chart')
+    },
     async openXslxFile () {
       const picker = await remote.dialog.showOpenDialog({
         properties: ['openFile'],

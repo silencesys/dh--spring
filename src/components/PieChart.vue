@@ -1,8 +1,8 @@
 <template>
     <div class="graph-selectors">
-      <Select :columns="file.columns" :current-value="graph.type" v-on:new-value="({column}) => setGraph('type', column)"></Select>
-      <Select :columns="file.columns" :current-value="graph.category" v-on:new-value="({column}) => setGraph('category', column)"></Select>
-      <Select :columns="Object.keys(graph.keys)"  :current-value="graph.key" v-on:new-value="({column}) => setGraph('key', column)"></Select>
+      <Select :columns="file.columns" v-model="chart.filters.category" @update:modelValue="(value) => setChartFilterCategory(value)" />
+      <Select :columns="file.columns" v-model="chart.filters.value" @update:modelValue="(value) => setChartFilterValue(value)" />
+      <Select :columns="subCategories" v-model="chart.filters.subCategory" @update:modelValue="(value) => setChartFilterSubCategory(value)" />
     </div>
     <div style="height: 100%;">
       <div id="pie-chart" style="height: 100%;" />
@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import * as am4core from "@amcharts/amcharts4/core"
 import * as am4charts from "@amcharts/amcharts4/charts"
 import am4themes_animated from "@amcharts/amcharts4/themes/animated"
@@ -41,10 +42,16 @@ export default {
 
   mixins: [fileOperations, chartOperations],
 
+  mounted () {
+    ipcRenderer.on('export-chart', () => {
+      if (this.chart.instance) {
+        this.chart.instance.exporting.export('png')
+      }
+    });
+  },
+
   beforeUnmount () {
-    if (this.chart !== null) {
-      this.chart.dispose()
-    }
+    this.disposeExistingChartInstance()
   },
 
   data () {
@@ -54,9 +61,18 @@ export default {
         content: [],
         columns: []
       },
-      chart: null,
-      currentChart: {},
-      chartData: {},
+      chart: {
+        instance: null,
+        rows: [],
+        filters: {
+          category: null,
+          value: null,
+          subCategory: null
+        },
+        subCategories: [],
+        ignoredValues: []
+      },
+      chartTimeout: 0,
       graphRows: [],
       graph: {
         type: null,
@@ -67,53 +83,90 @@ export default {
     }
   },
 
+  computed: {
+    subCategories () {
+      return Object.keys(this.chart.subCategories)
+    },
+  },
+
   methods: {
     loadAfterFile () {
-      this.prepareFileContent()
-      this.setGraph('type', this.file.columns[0])
-      this.setGraph('category', this.file.columns[1])
+      this.chart.rows = this.prepareRowsForChart(this.file)
+
+      // Set default choices for every select
+      this.setChartFilterCategory(this.file.columns[0])
+      this.setChartFilterValue(this.file.columns[1])
+      this.setChartFilterSubCategory(this.subCategories[0])
     },
-    setGraph (field, value) {
-      this.graph[field] = value
-      this.prepareKeys()
+    setChartFilterCategory (value) {
+      this.chart.filters.category = value
+      this.chart.subCategories = this.countFrequencyBasedOnColumn(this.chart.filters.category, this.chart.rows)
+      this.setChartFilterSubCategory(this.subCategories[0], false)
 
-      if (field === 'type') {
-        this.graph.key = Object.keys(this.graph.keys)[0]
-        this.setGraph('key', Object.keys(this.graph.keys)[0])
-      }
-
-      if (this.chart !== null) {
-        this.chart.dispose()
-      }
-
-      this.setDataForPieChart(this.graph.key)
+      this.renderChart()
     },
-    setDataForPieChart (key) {
-      const values = []
-      // if (this.chart) this.chart.dispose()
-      for (const item in this.graph.keys[key]) {
-        if (item) {
-          values.push({
-            category: item,
-            value: this.graph.keys[key][item]
-          })
+    setChartFilterValue (value) {
+      this.chart.filters.value = value
+      this.setChartFilterSubCategory(this.subCategories[0], false)
+
+      this.renderChart()
+    },
+    setChartFilterSubCategory (value, drawChart = true) {
+      this.chart.filters.subCategory = value
+
+      if (drawChart) {
+        this.renderChart()
+      }
+    },
+    renderChart () {
+      clearTimeout(this.chartTimeout)
+
+      this.chartTimeout = setTimeout(() => {
+        this.drawPieChart()
+      }, 100)
+    },
+    /**
+     * Dispose any existing chart instance.
+     */
+    disposeExistingChartInstance () {
+      if (this.chart.instance !== null) {
+        try {
+          this.chart.instance.dispose()
+          this.chart.instance = null
+        } catch (error) {
+          console.error('Chart instance could not be disposed!')
+          console.error(error)
         }
       }
+    },
+    drawPieChart () {
+      this.disposeExistingChartInstance()
 
-      this.chart = am4core.create("pie-chart", am4charts.PieChart)
-      this.chart.data = values
-      this.currentChart = this.chart.series.push(new am4charts.PieSeries())
-      this.currentChart.dataFields.value = 'value'
-      this.currentChart.dataFields.category = 'category'
-      this.currentChart.labels.template.disabled = true
-      this.currentChart.ticks.template.disabled = true
-      this.currentChart.ticks.template.fontSize = 1
-      this.currentChart.ticks.template.text = '{category}'
-      this.chart.radius = am4core.percent(70)
-      this.chart.innerRadius = am4core.percent(40)
-      this.chart.legend = new am4charts.Legend()
-      this.chart.startAngle = 180
-      this.chart.endAngle = 360
+      const values =  this.convertRowsToChartData(this.chart).data
+
+      const chart = am4core.create("pie-chart", am4charts.PieChart)
+      chart.data = values
+      chart.radius = am4core.percent(70)
+      chart.innerRadius = am4core.percent(40)
+      chart.legend = new am4charts.Legend()
+      chart.startAngle = 180
+      chart.endAngle = 360
+
+      const pieChart = chart.series.push(new am4charts.PieSeries())
+      pieChart.dataFields.value = 'value'
+      pieChart.dataFields.category = 'category'
+      pieChart.labels.template.disabled = true
+      pieChart.ticks.template.disabled = true
+      pieChart.ticks.template.fontSize = 1
+      pieChart.ticks.template.text = '{category}'
+
+      const options = chart.exporting.getFormatOptions('png')
+      options.scale = 3
+      options.quality = 1
+      chart.exporting.setFormatOptions('png', options)
+      chart.exporting.backgroundColor = am4core.color("#f00", 0)
+
+      this.chart.instance = chart
     }
   }
 }
