@@ -67,6 +67,16 @@
       </h2>
       <div class="settings__arrayable-columns__form">
         <h3 class="settings-section__sub-title">
+          Sdílené filtrování dat
+        </h3>
+        <p class="settings-section__description">
+          Filtrování nastavené v části Dokument bude k dispozici i pro část s grafy. Bude tak možné zobrazit grafy jen
+          pro určitý výsek dat.
+        </p>
+          <Toggle el-id="filters-shared" v-model="sharedDocumentFilters" @update:modelValue="updateFilterSharingStatus">Sdílené filtry</Toggle>
+      </div>
+      <div class="settings__arrayable-columns__form">
+        <h3 class="settings-section__sub-title">
           Barevné schéma aplikace
         </h3>
         <p class="settings-section__description">
@@ -75,10 +85,26 @@
         <Select :columns="theme.options" v-model="theme.chosen" @update:modelValue="updateApplicationTheme" />
       </div>
     </div>
+    <div class="settings-section">
+      <h2 class="settings-section__title">
+        <font-awesome-icon :icon="['far', 'browser']" />
+        O aplikaci
+      </h2>
+      <div class="settings__arrayable-columns__form">
+        <h3 class="settings-section__sub-title">
+          Spring
+        </h3>
+        <p class="settings-section__description">
+          Verze aplikace: {{ remote.app.getVersion() }} <br>
+          Autor: Martin Roček <br>
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import electron from 'electron'
 import Select from '@/components/Select'
 import Toggle from '@/components/Toggle'
 import fileOperations from '@/mixins/fileOperations'
@@ -111,6 +137,7 @@ export default {
         name: '',
         shared: true
       },
+      sharedDocumentFilters: false,
       dataTypes: {
         available: [
           { key: 'string', value: 'Text' },
@@ -122,6 +149,7 @@ export default {
         },
         set: []
       },
+      remote: null,
       theme: {
         options: [
           { key: 'system', value: 'Systémové'},
@@ -145,10 +173,16 @@ export default {
       } else {
         this.theme.chosen = this.theme.options[0]
       }
+      this.sharedDocumentFilters = this.appStore.get('sharedDocumentFilters') || false
+
+      this.remote = electron.remote
     },
     saveFileSettings () {
       this.store.set({ key: 'arrayableColumns', value: this.arrayableColumns })
       this.store.set({ key: 'setDataTypes', value: this.dataTypes.set })
+    },
+    saveAppSettings () {
+      this.appStore.set({ key: 'sharedDocumentFilters', value: this.sharedDocumentFilters })
     },
     markAsArrayable () {
       this.arrayableColumns.push({...this.arrayableColumn})
@@ -164,6 +198,9 @@ export default {
     },
     updateApplicationTheme () {
       this.$emit('theme-change', this.theme.chosen)
+    },
+    updateFilterSharingStatus () {
+      this.saveAppSettings()
     },
     markAsDataType () {
       this.dataTypes.set.push({...this.dataTypes.selected})

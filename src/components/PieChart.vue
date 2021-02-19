@@ -86,17 +86,19 @@ export default {
   computed: {
     subCategories () {
       return Object.keys(this.chart.subCategories)
-    },
+    }
   },
 
   methods: {
     loadAfterFile () {
-      this.chart.rows = this.prepareRowsForChart(this.file)
+      this.chart.rows = this.prepareRowsForChart(this.chartData, this.file.arrayableColumns)
 
       // Set default choices for every select
       this.setChartFilterCategory(this.file.columns[0])
       this.setChartFilterValue(this.file.columns[1])
       this.setChartFilterSubCategory(this.subCategories[0])
+
+      this.emitDocumentFiltersSharingStatus()
     },
     setChartFilterCategory (value) {
       this.chart.filters.category = value
@@ -165,6 +167,7 @@ export default {
       options.quality = 1
       chart.exporting.setFormatOptions('png', options)
       chart.exporting.backgroundColor = am4core.color("#f00", 0)
+      chart.exporting.filePrefix = 'spring'
 
       this.chart.instance = chart
     }

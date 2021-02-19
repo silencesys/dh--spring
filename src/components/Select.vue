@@ -58,7 +58,6 @@ export default {
     if (this.scopedValue) {
       if (this.isObject(this.columns[0])) {
         const index = this.columns.findIndex(item => item.key === this.scopedValue)
-        console.log(index)
         if (index > -1) {
           this.selected = this.columns[index].value
         }

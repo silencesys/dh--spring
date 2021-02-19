@@ -4,7 +4,7 @@
       {{ fileName  || 'žádný soubor nebyl vybrán' }}
     </h3>
     <div>
-      <button class="button__round" style="margin-right: 1rem;" @click.prevent="exportChart"><!--
+      <button v-if="$route.meta.exportable" class="button__round" style="margin-right: 1rem;" @click.prevent="exportChart"><!--
         --><font-awesome-icon :icon="['far', 'file-export']" /><!--
       --></button>
       <button class="button__round" @click.prevent="openXslxFile"><!--

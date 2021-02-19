@@ -24,6 +24,10 @@ export default {
         setDataTypes: [],
         arrayableColumns: []
       },
+      copy: {
+        content: [],
+        columns: []
+      },
       store: {}
     }
   },
@@ -36,6 +40,9 @@ export default {
       this.file.content = store.content
       this.file.setDataTypes = store.setDataTypes || []
       this.file.arrayableColumns = store.arrayableColumns || []
+      this.file.filters = store.filters || []
+      this.copy = store.copy
+
       if (this.loadAfterFile && typeof this.loadAfterFile === 'function') {
         this.loadAfterFile()
       } else {

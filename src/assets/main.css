@@ -431,7 +431,15 @@ body {
   list-style: none;
   overflow: auto !important;
   max-height: 70vh;
-  columns: 2;
+  text-align-last: left;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+.modal-body__option-list li {
+  flex-basis: 50%;
 }
 .modal-body__option-list button {
   background: none;
@@ -473,6 +481,8 @@ body {
 .graph__tabs {
   margin-top: 2rem;
   margin-bottom: 1.6rem;
+  display: flex;
+  justify-content: space-between;
 }
 .graph__tabs a {
   background: none;
@@ -489,6 +499,18 @@ body {
 }
 .graph__tabs a.router-link-exact-active {
   color: var(--blue-500);
+}
+.chart-filter-warning {
+  font-size: .9rem;
+  color: var(--blue-300);
+  cursor: pointer;
+  transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.chart-filter-warning:hover {
+  color: var(--blue-500);
+}
+.chart-filter-warning svg {
+  margin-right: .5rem;
 }
 
 .chart-range-sliders {

@@ -19,11 +19,17 @@ const routes = [
         path: '',
         name: 'PieChart',
         component: () => import(/* webpackChunkName: "graph-pie" */ '../components/PieChart.vue'),
+        meta: {
+          exportable: true
+        }
       },
       {
         path: '/axis',
         name: 'AxisChart',
         component: () => import(/* webpackChunkName: "graph-axis" */ '../components/AxisChart.vue'),
+        meta: {
+          exportable: true
+        }
       }
     ]
   },

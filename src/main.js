@@ -5,7 +5,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt, faFileExport
+  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle
 } from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Quasar, QVirtualScroll } from 'quasar'
@@ -18,7 +18,7 @@ import './assets/responsive.css'
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt, faFileExport
+  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle
 )
 
 const app = createApp(App)

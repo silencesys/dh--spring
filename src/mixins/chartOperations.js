@@ -1,6 +1,31 @@
+import applicationSettings from '@/mixins/applicationSettings'
+
 export default {
+  emits: ['data-are-filtered'],
+  mixins: [applicationSettings],
+  computed: {
+    shareFilterSettings () {
+      return this.appStore.get('sharedDocumentFilters') || false
+    },
+    chartData () {
+      if (this.shareFilterSettings && this.copy.content.length > 0) {
+        return {
+          content: this.copy.content,
+          // Charts should always have all columns available
+          columns: this.file.columns
+        }
+      }
+
+      return this.file
+    },
+  },
   methods: {
-    prepareRowsForChart ({ content, arrayableColumns }) {
+    emitDocumentFiltersSharingStatus () {
+      this.$emit('data-are-filtered', {
+        active: this.shareFilterSettings, filters: this.file.filters
+      })
+    },
+    prepareRowsForChart ({ content }, arrayableColumns) {
       const rows = []
 
       content.forEach((row) => {

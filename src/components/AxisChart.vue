@@ -162,12 +162,14 @@ export default {
      */
     loadAfterFile () {
       // Prepare rows for chart rendering
-      this.chart.rows = this.prepareRowsForChart(this.file)
+      this.chart.rows = this.prepareRowsForChart(this.chartData, this.file.arrayableColumns)
 
       // Set default choices for every select
       this.setChartFilterCategory(this.file.columns[0])
       this.setChartFilterValue('Četnost')
       this.setChartFilterSubCategory(this.subCategories[0])
+
+      this.emitDocumentFiltersSharingStatus()
     },
     updateChartRange () {
       clearTimeout(this.rangeUpdateTimer)
@@ -302,6 +304,7 @@ export default {
       options.quality = 1
       chart.exporting.setFormatOptions('png', options)
       chart.exporting.backgroundColor = am4core.color("#f00", 0)
+      chart.exporting.filePrefix = 'spring'
 
       // Define methods that can be used to draw the chart based on the data type.
       const chartConstructor = {
