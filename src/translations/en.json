@@ -15,7 +15,7 @@
   },
   "document": {
     "create_filter": "Create filter",
-    "search_placeholder": "Search, \"word\" can specify searching",
+    "search_placeholder": "Use \"quotation marks\" for exact search",
     "show_columns": "show columns",
     "modal": {
       "show_columns": "Show columns"

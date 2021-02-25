@@ -17,7 +17,7 @@
   },
   "document": {
     "create_filter": "Přidat filtr",
-    "search_placeholder": "Vyhledávat, \"heslo\" upřesňuje vyhledávání",
+    "search_placeholder": "Použijte \"uvozovky\" pro přesné hledání",
     "show_columns": "zobrazit sloupce",
     "modal": {
       "show_columns": "Zobrazit sloupce"
