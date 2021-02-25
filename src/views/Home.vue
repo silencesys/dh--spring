@@ -140,10 +140,16 @@ export default {
 
   computed: {
     tableContent () {
-      return this.copy.content || this.file.content
+      if (this.copy.content && this.copy.content.length > 0) {
+        return this.copy.content
+      }
+      return this.file.content
     },
     tableColumns () {
-      return this.copy.columns || this.file.columns
+      if (this.copy.content && this.copy.content.length > 0) {
+        return this.copy.columns
+      }
+      return this.file.columns
     },
     visibleRows () {
       return this.tableContent.slice(this.sliceStart, 500)

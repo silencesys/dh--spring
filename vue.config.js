@@ -18,13 +18,16 @@ module.exports = {
         mac: {
           target: [
             { target: 'tar.gz', arch: 'arm64' },
-            // { target: 'tar.gz', arch: 'x64' }
+            { target: 'dmg', arch: 'arm64' }
           ],
           darkModeSupport: true,
           category: 'public.app-category.productivity'
         },
         win: {
-          target: ['zip', 'nsis']
+          target: [
+            { target: 'zip', arch: 'x64' },
+            { target: 'nsis', arch: 'x64' }
+          ]
         }
       }
     }
