@@ -8,7 +8,9 @@
         <Slider :min="0" :max="fieldRange.length - 1" v-model="range" :step="1" style="width: 100%" :tooltips="false" />
         <span>{{ fieldRange[fieldRange.length - 1] }}</span>
       </div>
-      <Toggle v-if="this.chart.categoryDataType === 'date'" el-id="split-values" v-model="this.chart.split" style="justify-self: end;">Rozdělit hodnoty</Toggle>
+      <Toggle v-if="this.chart.categoryDataType === 'date'" el-id="split-values" v-model="this.chart.split" style="justify-self: end;">
+        {{ $t('chart.split_values') }}
+      </Toggle>
     <div class="chart-tag-filter__wrapper">
       <ul class="chart-tag-filter">
         <li v-for="value in values" :key="value + ignoredValuesStates[value].icon" :class="ignoredValuesStates[value].elementClass">
@@ -112,14 +114,17 @@ export default {
   },
 
   computed: {
+    frequencyColumn () {
+      return this.$t('chart.column.frequency')
+    },
     valueColumns () {
       const columns = [...this.file.columns]
-      columns.unshift('Četnost')
+      columns.unshift(this.frequencyColumn)
 
       return columns
     },
     subCategories () {
-      if (this.chart.filters.value === 'Četnost') {
+      if (this.chart.filters.value === this.frequencyColumn) {
         return this.file.columns.filter(column => column !== this.chart.filters.category)
       }
       return Object.keys(this.chart.subCategories)
@@ -166,7 +171,7 @@ export default {
 
       // Set default choices for every select
       this.setChartFilterCategory(this.file.columns[0])
-      this.setChartFilterValue('Četnost')
+      this.setChartFilterValue(this.frequencyColumn)
       this.setChartFilterSubCategory(this.subCategories[0])
 
       this.emitDocumentFiltersSharingStatus()
@@ -223,7 +228,7 @@ export default {
     setChartFilterSubCategory (value, drawChart = true) {
       this.chart.filters.subCategory = value
 
-      if (this.chart.filters.value === 'Četnost') {
+      if (this.chart.filters.value === this.frequencyColumn) {
         this.chart.values = this.countFrequencyBasedOnColumn(this.chart.filters.subCategory, this.chart.rows)
       }
 
@@ -274,7 +279,7 @@ export default {
       this.disposeExistingChartInstance()
 
       let data = []
-      if (this.chart.filters.value === 'Četnost') {
+      if (this.chart.filters.value === this.frequencyColumn) {
         data = this.getFrequency(this.chart, this.chart.split)
       } else {
         data = this.convertRowsToChartData(this.chart).data

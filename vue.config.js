@@ -24,6 +24,7 @@ module.exports = {
           category: 'public.app-category.productivity'
         },
         win: {
+          icon: './build/icon.ico',
           target: [
             { target: 'zip', arch: 'x64' },
             { target: 'nsis', arch: 'x64' }

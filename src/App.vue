@@ -50,6 +50,7 @@ export default {
   methods: {
     loadAfterAppSettings () {
       this.loadTheme()
+      this.$i18n.locale = this.appStore.get('language') || 'en'
     },
     updateTheme(theme) {
       const newTheme = `theme-${theme.key}`
@@ -58,6 +59,8 @@ export default {
       if (currentTheme) {
         const previousTheme = `theme-${currentTheme.key}`
         document.body.classList.remove(previousTheme)
+      } else {
+        document.body.classList.remove('theme-system')
       }
 
       document.body.classList.add(newTheme)
@@ -65,10 +68,11 @@ export default {
     },
     loadTheme () {
       const currentTheme = this.appStore.get('theme')
+      let theme = 'theme-system'
       if (currentTheme) {
-        const theme = `theme-${currentTheme.key}`
-        document.body.classList.add(theme)
+        theme = `theme-${currentTheme.key}`
       }
+      document.body.classList.add(theme)
     }
   }
 }

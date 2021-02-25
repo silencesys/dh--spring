@@ -1,7 +1,7 @@
 <template>
   <div id="app-fileinfo">
     <h3 class="app-fileinfo__filename">
-      {{ fileName  || 'žádný soubor nebyl vybrán' }}
+      {{ fileName  || $t('general.no_file_selected') }}
     </h3>
     <div>
       <button v-if="$route.meta.exportable" class="button__round" style="margin-right: 1rem;" @click.prevent="exportChart"><!--
@@ -23,7 +23,7 @@ export default {
   props: {
     fileName: {
       type: String,
-      default: 'Filename.xslx'
+      default: null
     }
   },
 

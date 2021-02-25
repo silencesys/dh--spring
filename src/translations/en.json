@@ -1,0 +1,77 @@
+{
+  "language": "English",
+  "general": {
+    "no_file_selected": "no file selected"
+  },
+  "menu": {
+    "document": "Document",
+    "charts": "Charts",
+    "settings": "Settings"
+  },
+  "button": {
+    "close": "Close",
+    "close_save": "Close and save",
+    "reset": "Reset"
+  },
+  "document": {
+    "create_filter": "Create filter",
+    "search_placeholder": "Search, \"word\" can specify searching",
+    "show_columns": "show columns",
+    "modal": {
+      "show_columns": "Show columns"
+    },
+    "filter-type": {
+      "extending": "Extending",
+      "specifying": "Specifying"
+    }
+  },
+  "chart": {
+    "split_values": "Split values",
+    "tab_pie": "Pie",
+    "tab_column": "Column",
+    "document_filters_active": "document filters are active",
+    "document_filters_title": "Active filters",
+    "empty_column": "Column",
+    "column": {
+      "frequency": "Frequency"
+    }
+  },
+  "settings": {
+    "file": {
+      "title": "File settings",
+      "multi-value_columns": "Multi-value columns",
+      "multi-value_columns_description": "Here you can choose which columns can contain more than one value. These columns with more than one value should be marked by the prefix #: in the source file. Example: <span class='do-not-break is-example'>1: value.</span> Using a multi-value column allows you to connect multiple values in one row. Example: if you have two people in one column - <span class='do-not-break is-example'>1: person; 2:person</span>, you can assign another value from the same row, for example colour of clothes - <span class='do-not-break is-example'>1: red; 2: blue.</span> The graph automatically differentiates the values and shows person 1 as wearing red, person 2 as wearing blue. It isn't necessary to fill in both values, for example only person 1 is wearing red, while person 2 isn't described.",
+      "multi-value_columns_toggle": "Shares value across multiple rows",
+      "multi-value_columns_button": "Mark column as multi-valued",
+      "multi-value_columns_marked_columns": "Marked columns",
+      "multi-value_columns_shared": ", shared across rows: ",
+      "data_type": "Column data types",
+      "data_type_description": "Here you can set various data types for individual columns. This helps filter the results and enables advanced display options.",
+      "data_type_button": "Set data type",
+      "data_type_marked_columns": "Columns with set data type",
+      "data_type_tag": "{column}, type: {type}",
+      "data_types": {
+        "text": "Text",
+        "date": "Date"
+      }
+    },
+    "app": {
+      "title": "Application settings",
+      "shared_filters": "Shared document filters",
+      "shared_filters_desc": "The filters set up in the Document section are applied in the Charts section too. This means you get a chart for the filtered part only. ",
+      "shared_filters_toggle": "Shared filters",
+      "theme": "Application theme",
+      "theme_desc": "Set up the colour scheme of the app, light, dark or system-defined.",
+      "language": "Language",
+      "language_desc": "Here you can set different language of the app.",
+      "about": "About application",
+      "version": "Version {version}",
+      "author": "Author",
+      "themes": {
+        "dark": "Dark",
+        "light": "Light",
+        "system": "System"
+      }
+    }
+  }
+}

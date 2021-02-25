@@ -1,0 +1,79 @@
+{
+  "language": "Čeština",
+  "general": {
+    "no_file_selected": "žádný soubor nebyl vybrán",
+    "yes": "ano",
+    "no": "ne"
+  },
+  "menu": {
+    "document": "Dokument",
+    "charts": "Grafy",
+    "settings": "Nastavení"
+  },
+  "button": {
+    "close": "Zavřít",
+    "close_save": "Zavřít a uložit",
+    "reset": "Reset"
+  },
+  "document": {
+    "create_filter": "Přidat filtr",
+    "search_placeholder": "Vyhledávat, \"heslo\" upřesňuje vyhledávání",
+    "show_columns": "zobrazit sloupce",
+    "modal": {
+      "show_columns": "Zobrazit sloupce"
+    },
+    "filter-type": {
+      "extending": "Rozšířující",
+      "specifying": "Upřesňující"
+    }
+  },
+  "chart": {
+    "split_values": "Rozdělit hodnoty",
+    "tab_pie": "Koláčový",
+    "tab_column": "Sloupcový",
+    "document_filters_active": "filtry z dokumentu jsou aktivní",
+    "document_filters_title": "Aktivní filtry",
+    "empty_column": "Sloupec",
+    "column": {
+      "frequency": "Četnost"
+    }
+  },
+  "settings": {
+    "file": {
+      "title": "Nastavení souboru",
+      "multi-value_columns": "Více-hodnotové sloupce",
+      "multi-value_columns_description": "V této části nastavení lze zvolit, které sloupce mohou obsahovat více než jednu hodnotu. Ve zdrojovém souboru by měly být označeny prefixem #:, tedy například <span class='do-not-break is-example'>1: hodnota.</span> Nastavení více-hodnotového sloupce umožňuje propojit několik hodnot v jednom řádku. Tedy například, pokud jsou v jednom řádku dvě osoby - <span class='do-not-break is-example'>1: osoba; 2: osoba.</span> Lze k nim přiřadit další vlastnost, například barvu oblečení - <span class='do-not-break is-example'>1: červené; 2: modré.</span> V grafu pak dojde k logickému rozdělení hodnot a započítání 1 osoby s červeným oblečením a druhé s modrým. Zároveň není nutné, aby byly obě hodnoty vždy přítomny, tedy například může být popsána pouze první osoba.",
+      "multi-value_columns_toggle": "Sdílý hodnotu napříč řádky",
+      "multi-value_columns_button": "Označit sloupec jako pole",
+      "multi-value_columns_marked_columns": "Označené sloupce",
+      "multi-value_columns_shared": ", sdílený: ",
+      "data_type": "Datové typy sloupců",
+      "data_type_description": "Zde lze nastavit různé datové typy pro jednotlivé sloupce. To usnadní filtrování výsledků a umožní pokročilé možnosti práce s těmito sloupci.",
+      "data_type_button": "Nastavit datový typ",
+      "data_type_marked_columns": "Nastavené sloupce",
+      "data_type_tag": "{column}, typ: {type}",
+      "data_types": {
+        "text": "Text",
+        "date": "Datum"
+      }
+    },
+    "app": {
+      "title": "Nastavení aplikace",
+      "shared_filters": "Sdílené filtrování dat",
+      "shared_filters_desc": "Filtrování nastavené v části Dokument bude k dispozici i pro část s grafy. Bude tak možné zobrazit grafy jen pro určitý výsek dat.",
+      "shared_filters_toggle": "Sdílené filtry",
+      "theme": "Barevné schéma aplikace",
+      "theme_desc": "Nastavuje barevné schéma aplikace, a to na světlé, tmavé nebo řízené systémem.",
+      "language": "Jazyk aplikace",
+      "language_desc": "Zde lze nastavit jazyk aplikace.",
+      "about": "O aplikaci",
+      "version": "Verze aplikace {version}",
+      "author": "Autor",
+      "themes": {
+        "dark": "Tmavé",
+        "light": "Světlé",
+        "system": "Systémové"
+      }
+    }
+  }
+}

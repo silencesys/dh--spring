@@ -40,7 +40,7 @@ export default {
 
   data () {
     return {
-      selected: 'Sloupec',
+      selected: this.$t('chart.empty_column'),
       visible: false
     }
   },

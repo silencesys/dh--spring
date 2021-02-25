@@ -112,6 +112,7 @@ ipcMain.handle('open-xslx-file', async (event, path) => {
 
   const jsonFile = new Store(`${data.fileName}.json`)
   // Save file content.
+  jsonFile.set({})
   jsonFile.set({ key: 'columns', value: data.columns })
   jsonFile.set({ key: 'content', value: data.content })
   jsonFile.set({ key: 'fileName', value: data.fileName })
@@ -119,6 +120,11 @@ ipcMain.handle('open-xslx-file', async (event, path) => {
   jsonFile.set({ key: 'copy', value: { content: [], columns: [] } })
   // Set last opened file, so we can start with already opened file.
   store.set({ key: 'lastOpenedFile', value: `${data.fileName}.json` })
+
+  win.webContents.send(
+    'opened-file',
+    data
+  )
 })
 
 ipcMain.handle('export-chart', async () => {
@@ -133,11 +139,6 @@ ipcMain.handle('last-opened-file', () => {
 async function openFile (event, path) {
   const fileContent = await ExcelHandler(event, path)
   const response = Object.freeze({...fileContent, fileName: path.replace(/^.*[\\\/]/, '')})
-
-  win.webContents.send(
-    'opened-file',
-    response
-  )
 
   return response
 }

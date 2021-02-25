@@ -3,7 +3,7 @@
     <div>
       <div id="data-search" class="document-filter">
         <label for="search" class="data-search__search">
-          <input id="search" type="text" placeholder='Vyhledávat, "heslo" upřesňuje vyhledávání' v-model="filter.search">
+          <input id="search" type="text" :placeholder="$t('document.search_placeholder')" v-model="filter.search">
           <font-awesome-icon :icon="['far', 'search']" />
         </label>
         <Select :columns="file.columns" v-on:new-value="setFilterField">
@@ -13,7 +13,7 @@
           <font-awesome-icon :icon="['far', 'filter']" fixed-width />
         </Select>
         <button class="button__secondary add_filter" @click.prevent="createFilter">
-          Přidat filtr
+          {{ $t('document.create_filter') }}
         </button>
       </div>
     </div>
@@ -27,7 +27,9 @@
         </li>
       </ul>
       <div v-if="file.columns.length > 0" class="field-settings">
-        <button class="button__secondary" @click="toggleModal">zobrazit sloupce</button>
+        <button class="button__secondary" @click="toggleModal">
+          {{ $t('document.show_columns') }}
+        </button>
       </div>
     </div>
 
@@ -56,7 +58,9 @@
 
   <Modal v-if="modalOpen">
     <div class="modal-body w-400">
-      <h3>Zobrazit sloupce</h3>
+      <h3>
+        {{ $t('document.modal.show_columns') }}
+      </h3>
       <ul class="modal-body__option-list">
         <li v-for="column in filterColumns" :key="column.name+column.icon">
           <button @click.prevent="addOrRemoveColumn(column)">
@@ -65,8 +69,12 @@
           </button>
         </li>
       </ul>
-      <button class="button__primary" @click.prevent="toggleModal">Zavřít a uložit</button>
-      <button class="button__secondary" @click.prevent="resetColumns">Reset</button>
+      <button class="button__primary" @click.prevent="toggleModal">
+        {{ $t('button.close_save') }}
+      </button>
+      <button class="button__secondary" @click.prevent="resetColumns">
+        {{ $t('button.reset') }}
+      </button>
     </div>
   </Modal>
 </template>
@@ -111,8 +119,8 @@ export default {
       store: {},
       filtered: false,
       filterTypes: [
-        { key: 'file', value: 'Rozšiřující', icon: 'expand-alt' },
-        { key: 'copy', value: 'Upřesňující', icon: 'compress-alt' }
+        { key: 'file', value: this.$t('document.filter-type.extending'), icon: 'expand-alt' },
+        { key: 'copy', value: this.$t('document.filter-type.specifying'), icon: 'compress-alt' }
       ],
       filters: {},
       filter: {
@@ -231,7 +239,10 @@ export default {
       this.file.content = file.content
       this.copy.columns = file.copy?.columns || null
       this.copy.content = file.copy?.content || null
-      this.filters = file.filters || {}
+      console.log(file)
+      if (file) {
+        this.filters = file.filters || {}
+      }
     },
     addOrRemoveColumn (column) {
       this.setCopyColumns()
