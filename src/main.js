@@ -6,7 +6,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle
+  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle, faChevronRight,
+  faChevronLeft
 } from '@fortawesome/pro-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { Quasar, QVirtualScroll } from 'quasar'
@@ -20,7 +21,8 @@ import { selectedLocale, loadLocaleMessages } from './plugins/i18n'
 library.add(
   faFile, faSearch, faColumns, faChartPie, faCog, faFolderOpen, faCaretDown,
   faTimesCircle, faPlusCircle, faSquare, faCheckSquare, faFilter, faCompressAlt,
-  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle
+  faExpandAlt, faFileExport, faBrowser, faExclamationTriangle, faChevronRight,
+  faChevronLeft
 )
 
 const i18n = createI18n({

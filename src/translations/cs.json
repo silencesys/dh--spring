@@ -3,7 +3,12 @@
   "general": {
     "no_file_selected": "žádný soubor nebyl vybrán",
     "yes": "ano",
-    "no": "ne"
+    "no": "ne",
+    "previous_page": "Předchozí",
+    "next_page": "Další",
+    "current_page": "Stránka {current} z {total}",
+    "tooltip_export": "Uložit graf jako .PNG",
+    "tooltip_open_file": "Otevřít soubor"
   },
   "menu": {
     "document": "Dokument",

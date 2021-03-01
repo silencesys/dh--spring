@@ -852,6 +852,73 @@ body {
   margin: auto;
 }
 
+/*
+  ----------------------------------------------------------------------------
+  Document navigation
+  ----------------------------------------------------------------------------
+  Universal component styles.
+*/
+.document__navigation {
+  list-style: none;
+  margin: 0;
+  padding: 0 1rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  left: 0;
+}
+.document__navigation li {
+  padding: .5rem 1rem;
+  display: block;
+}
+.document__navigation__next,
+.document__navigation__previous {
+  background: var(--blue-300);
+  border-radius: .5rem;
+  color: var(--white);
+  cursor: pointer;
+  padding: .5rem 1rem;
+  transition: all .3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.document__navigation__next:hover,
+.document__navigation__previous:hover {
+  background-color: var(--blue-700);
+}
+.document__navigation__next svg {
+  margin-left: .5rem;
+}
+.document__navigation__previous svg{
+  margin-right: .5rem;
+}
+.document__navigation__current {
+  color: var(--blue-300)
+}
+
+/*
+  ----------------------------------------------------------------------------
+  Tooltip
+  ----------------------------------------------------------------------------
+  Universal component styles.
+*/
+.tooltip__wrapper {
+  display: inline-block;
+  position: relative;
+}
+.tooltip {
+  background-color: var(--white);
+  font-size: .9rem;
+  border-radius: .5rem;
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+  position: absolute;
+  text-transform: initial;
+  z-index: 999;
+  margin-top: 1rem;
+  width: 170px;
+}
+.tooltip--left { right: 0; }
+.tooltip--right { left: 0; }
+.tooltip--bottom { bottom: 0; }
 
 /* Dirty hack that shouldnt be there */
 g[aria-labelledby$='title'] {

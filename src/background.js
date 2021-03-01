@@ -1,6 +1,7 @@
 'use strict'
 
 import { app, protocol, BrowserWindow, ipcMain } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import ExcelHandler from './utils/excel'
@@ -81,6 +82,8 @@ app.on('ready', async () => {
   }
 
   createWindow()
+
+  autoUpdater.checkForUpdatesAndNotify()
 
   win.on('resize', () => {
     // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with

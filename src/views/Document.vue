@@ -52,6 +52,23 @@
           </tbody>
         </table>
       </div>
+      <ul class="document__navigation">
+        <li>
+          <span v-if="!isOnFirstPage" class="document__navigation__previous" @click.prevent="navigateToPreviousPage">
+            <font-awesome-icon :icon="['far', 'chevron-left']" />
+            {{ $t('general.previous_page') }}
+          </span>
+        </li>
+        <li class="document__navigation__current">
+          {{ $t('general.current_page', { current: this.page.currentPage, total: this.totalNumberOfPages }) }}
+        </li>
+        <li>
+          <span v-if="!isOnLastPage" class="document__navigation__next" @click.prevent="navigateToNextPage">
+            {{ $t('general.next_page') }}
+            <font-awesome-icon :icon="['far', 'chevron-right']" />
+          </span>
+        </li>
+      </ul>
     </div>
     <ChooseFile v-else />
   </div>
@@ -86,7 +103,7 @@ import Modal from '@/components/Modal.vue'
 import ChooseFile from '@/components/ChooseFile.vue'
 
 export default {
-  name: 'Home',
+  name: 'Document',
 
   emits: {
     click: null
@@ -115,7 +132,11 @@ export default {
         columns: null,
         content: null
       },
-      sliceStart: 0,
+      page: {
+        offset: 0,
+        limit: 500,
+        currentPage: 1
+      },
       store: {},
       filtered: false,
       filterTypes: [
@@ -160,7 +181,8 @@ export default {
       return this.file.columns
     },
     visibleRows () {
-      return this.tableContent.slice(this.sliceStart, 500)
+      const limitPlusOffset = this.page.offset + this.page.limit
+      return this.tableContent.slice(this.page.offset, limitPlusOffset)
     },
     filterTypeName () {
       return this.filterTypes.reduce(
@@ -180,10 +202,27 @@ export default {
       }
 
       return columns
+    },
+    totalNumberOfPages () {
+      return Math.ceil(this.tableContent.length / this.page.limit)
+    },
+    isOnLastPage () {
+      return this.page.currentPage === this.totalNumberOfPages
+    },
+    isOnFirstPage () {
+      return this.page.currentPage === 1
     }
   },
 
   methods: {
+    navigateToNextPage () {
+      this.page.offset = this.page.offset + this.page.limit
+      this.page.currentPage++
+    },
+    navigateToPreviousPage () {
+      this.page.offset = this.page.offset - this.page.limit
+      this.page.currentPage--
+    },
     setFilterField ({ column }) {
       this.filter.field = column
     },
@@ -239,7 +278,6 @@ export default {
       this.file.content = file.content
       this.copy.columns = file.copy?.columns || null
       this.copy.content = file.copy?.content || null
-      console.log(file)
       if (file) {
         this.filters = file.filters || {}
       }

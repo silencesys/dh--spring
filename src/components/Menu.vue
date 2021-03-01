@@ -8,7 +8,7 @@
         </router-link>
       </li>
       <li>
-        <router-link to="/graphs">
+        <router-link to="/charts">
           <font-awesome-icon :icon="['far', 'chart-pie']" fixed-width />
           {{ $t('menu.charts') }}
         </router-link>

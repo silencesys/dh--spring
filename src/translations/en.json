@@ -1,7 +1,14 @@
 {
   "language": "English",
   "general": {
-    "no_file_selected": "no file selected"
+    "no_file_selected": "no file selected",
+    "yes": "yes",
+    "no": "no",
+    "previous_page": "Previous",
+    "next_page": "Next",
+    "current_page": "Page {current} out of {total}",
+    "tooltip_export": "Export chart as .PNG",
+    "tooltip_open_file": "Open file"
   },
   "menu": {
     "document": "Document",

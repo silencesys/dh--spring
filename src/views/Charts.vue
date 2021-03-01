@@ -33,7 +33,7 @@
 import Modal from '@/components/Modal'
 
 export default {
-  name: 'chart-page',
+  name: 'Charts',
 
   components: {
     Modal

@@ -43,6 +43,7 @@ am4core.useTheme(am4themes_animated)
 am4core.useTheme(darkThemeArmCharts)
 
 export default {
+  name: "AxisChart",
 
   props: {
     currentFile: {

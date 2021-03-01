@@ -17,6 +17,7 @@ body {
   --yellow-200: #DEA422;
 
   --shadow-sm: 0 3px 6px rgba(0, 42, 110, 6%);
+  --shadow-md: 0 5px 15px rgba(0, 42, 110, 10%);
 
   --modal-bg: rgba(24, 29, 51, 50%);
 }
@@ -41,6 +42,7 @@ body {
     --yellow-200: #DBC476;
 
     --shadow-sm: 0 3px 6px rgba(12, 14, 26, 10%);
+    --shadow-md: 0 5px 8px rgba(12, 14, 26, 15%);
   }
 }
 
@@ -63,6 +65,7 @@ body.theme-dark {
   --yellow-200: #DBC476;
 
   --shadow-sm: 0 3px 6px rgba(12, 14, 26, 10%);
+  --shadow-md: 0 5px 8px rgba(12, 14, 26, 15%);
 }
 
 @font-face {
