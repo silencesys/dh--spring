@@ -169,10 +169,10 @@ export default {
 
   computed: {
     tableContent () {
-      if (this.copy.content && this.copy.content.length > 0) {
-        return this.copy.content
+      if (this.copy.content === null) {
+        return this.file.content
       }
-      return this.file.content
+      return this.copy.content
     },
     tableColumns () {
       if (this.copy.content && this.copy.content.length > 0) {
@@ -204,7 +204,13 @@ export default {
       return columns
     },
     totalNumberOfPages () {
-      return Math.ceil(this.tableContent.length / this.page.limit)
+      const numberOfPages = Math.ceil(this.tableContent.length / this.page.limit)
+
+      if (numberOfPages === 0) {
+        return 1
+      }
+
+      return numberOfPages
     },
     isOnLastPage () {
       return this.page.currentPage === this.totalNumberOfPages
@@ -246,29 +252,77 @@ export default {
       }
     },
     filterData () {
-      this.setCopyContent()
-
-      for (const key in this.filters) {
-        this.copy.content = this[this.filters[key].type].content.filter((row) => {
-          const rowKeyToString = row[key]?.toString().toUpperCase().split(' ')
-          if (rowKeyToString && this.filters[key].values.some((item) => {
-            if (item.includes('"')) {
-              return rowKeyToString.includes(item.trim().replaceAll('"', '').toUpperCase())
-            } else {
-              return rowKeyToString.find(a => a.includes(item.trim().toUpperCase()))
-            }
-          })) {
-            return row
-          }
-          return false
-        })
+      if (Object.keys(this.filters).length === 0) {
+        this.copy.content = null
+        this.saveFile()
+        return
       }
+
+      let data = this.file.content.map((row) => {
+        return {...row}
+      })
+
+      const copyFilters = []
+
+      for (const rowIndex in data) {
+        const row = data[rowIndex]
+        const passedFilters = []
+        for (const filterKey in this.filters) {
+          if (this.filters[filterKey].type === 'file') {
+            const columnToString = row[filterKey]?.toString().toUpperCase()
+            if (columnToString && this.filters[filterKey].values.some(item => this.checkFilterValues(item, columnToString))) {
+              passedFilters.push(true)
+            } else {
+              passedFilters.push(false)
+            }
+          } else {
+            if (copyFilters.indexOf(filterKey) === -1) {
+              copyFilters.push(filterKey)
+            }
+          }
+        }
+
+        if (!passedFilters.includes(true)) {
+          delete data[rowIndex]
+        }
+      }
+
+      data.filter(Boolean)
+
+      if (copyFilters.length > 0) {
+        for (const rowIndex in data) {
+          const row = data[rowIndex]
+          let copy = true
+          for (const filter of copyFilters) {
+            const columnToString = row[filter]?.toString().toUpperCase()
+            if (copy && columnToString && this.filters[filter].values.some(item => this.checkFilterValues(item, columnToString))) {
+              // continue
+            } else {
+              copy = false
+            }
+          }
+
+          if (!copy) {
+            delete data[rowIndex]
+          }
+        }
+      }
+
+      this.copy.content = data.filter(Boolean)
 
       this.saveFile()
     },
+    checkFilterValues (item, columnValue) {
+      const query = columnValue
+      if (item.includes('"')) {
+        return query.includes(item.trim().replaceAll('"', '').toUpperCase())
+      } else {
+        return query.split(' ').find(a => a.includes(item.trim().toUpperCase()))
+      }
+    },
     removeFilter (key) {
       delete this.filters[key]
-      this.copy.content = this.file.content
+      this.copy.content = null
       this.filterData()
     },
     loadFileContent () {
