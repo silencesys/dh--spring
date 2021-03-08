@@ -175,7 +175,7 @@ export default {
       return this.copy.content
     },
     tableColumns () {
-      if (this.copy.content && this.copy.content.length > 0) {
+      if (this.copy.columns && this.copy.columns.length > 0) {
         return this.copy.columns
       }
       return this.file.columns
@@ -282,7 +282,7 @@ export default {
           }
         }
 
-        if (!passedFilters.includes(true)) {
+        if (!passedFilters.includes(true) && passedFilters.length > 0) {
           delete data[rowIndex]
         }
       }

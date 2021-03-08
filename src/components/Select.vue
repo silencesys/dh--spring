@@ -2,7 +2,7 @@
   <div :class="['select', { 'select--active': visible}]" v-click-outside="hideSelect">
     <div class="select__choice" @click="toggleSelect">
       <slot></slot>
-      {{ selected }}
+      <span class="select__selected-choice">{{ selected }}</span>
       <font-awesome-icon :icon="['far', 'caret-down']" />
     </div>
     <ul v-if="visible" class="select__list">

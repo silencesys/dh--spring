@@ -48,7 +48,7 @@
       "title": "Nastavení souboru",
       "multi-value_columns": "Více-hodnotové sloupce",
       "multi-value_columns_description": "V této části nastavení lze zvolit, které sloupce mohou obsahovat více než jednu hodnotu. Ve zdrojovém souboru by měly být označeny prefixem #:, tedy například <span class='do-not-break is-example'>1: hodnota.</span> Nastavení více-hodnotového sloupce umožňuje propojit několik hodnot v jednom řádku. Tedy například, pokud jsou v jednom řádku dvě osoby - <span class='do-not-break is-example'>1: osoba; 2: osoba.</span> Lze k nim přiřadit další vlastnost, například barvu oblečení - <span class='do-not-break is-example'>1: červené; 2: modré.</span> V grafu pak dojde k logickému rozdělení hodnot a započítání 1 osoby s červeným oblečením a druhé s modrým. Zároveň není nutné, aby byly obě hodnoty vždy přítomny, tedy například může být popsána pouze první osoba.",
-      "multi-value_columns_toggle": "Sdílý hodnotu napříč řádky",
+      "multi-value_columns_toggle": "Sdílí hodnotu napříč řádky",
       "multi-value_columns_button": "Označit sloupec jako pole",
       "multi-value_columns_marked_columns": "Označené sloupce",
       "multi-value_columns_shared": ", sdílený: ",

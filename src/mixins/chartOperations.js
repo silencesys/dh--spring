@@ -8,7 +8,7 @@ export default {
       return this.appStore.get('sharedDocumentFilters') || false
     },
     chartData () {
-      if (this.shareFilterSettings && this.copy.content.length > 0) {
+      if (this.shareFilterSettings && this.copy.content !== null) {
         return {
           content: this.copy.content,
           // Charts should always have all columns available

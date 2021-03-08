@@ -1,8 +1,21 @@
 <template>
     <div class="graph-selectors">
-      <Select :columns="file.columns" v-model="chart.filters.category" @update:modelValue="(value) => setChartFilterCategory(value)" />
-      <Select :columns="file.columns" v-model="chart.filters.value" @update:modelValue="(value) => setChartFilterValue(value)" />
-      <Select :columns="subCategories" v-model="chart.filters.subCategory" @update:modelValue="(value) => setChartFilterSubCategory(value)" />
+      <Select
+        :columns="file.columns"
+        v-model="chart.filters.category"
+        @update:modelValue="(value) => setChartFilterCategory(value)"
+      />
+      <Select
+        :columns="valueColumns"
+        v-model="chart.filters.value"
+        @update:modelValue="(value) => setChartFilterValue(value)"
+      />
+      <Select
+        v-if="chart.filters.value !== frequencyColumn"
+        :columns="subCategories"
+        v-model="chart.filters.subCategory"
+        @update:modelValue="(value) => setChartFilterSubCategory(value)"
+      />
     </div>
     <div style="height: 100%;">
       <div id="pie-chart" style="height: 100%;" />
@@ -64,6 +77,7 @@ export default {
       chart: {
         instance: null,
         rows: [],
+        values: [],
         filters: {
           category: null,
           value: null,
@@ -84,6 +98,15 @@ export default {
   },
 
   computed: {
+    frequencyColumn () {
+      return this.$t('chart.column.frequency')
+    },
+    valueColumns () {
+      const columns = [...this.file.columns]
+      columns.unshift(this.frequencyColumn)
+
+      return columns
+    },
     subCategories () {
       return Object.keys(this.chart.subCategories)
     }
@@ -109,12 +132,17 @@ export default {
     },
     setChartFilterValue (value) {
       this.chart.filters.value = value
+      this.chart.values = this.countFrequencyBasedOnColumn(this.chart.filters.value, this.chart.rows)
       this.setChartFilterSubCategory(this.subCategories[0], false)
 
       this.renderChart()
     },
     setChartFilterSubCategory (value, drawChart = true) {
       this.chart.filters.subCategory = value
+
+      if (this.chart.filters.value === this.frequencyColumn) {
+        this.chart.values = this.countFrequencyBasedOnColumn(this.chart.filters.subCategory, this.chart.rows)
+      }
 
       if (drawChart) {
         this.renderChart()
@@ -144,13 +172,20 @@ export default {
     drawPieChart () {
       this.disposeExistingChartInstance()
 
-      const values =  this.convertRowsToChartData(this.chart).data
-
+      let values = []
       const chart = am4core.create("pie-chart", am4charts.PieChart)
+
+      if (this.chart.filters.value === this.frequencyColumn) {
+        values = this.getFrequency(this.chart, this.chart.split)
+        chart.legend = Object.keys(this.subCategories).length < 28 ? new am4charts.Legend() : false
+      } else {
+        values = this.convertRowsToChartData(this.chart).data
+        chart.legend = Object.keys(this.chart.values).length < 28 ? new am4charts.Legend() : false
+      }
+
       chart.data = values
       chart.radius = am4core.percent(70)
       chart.innerRadius = am4core.percent(40)
-      chart.legend = new am4charts.Legend()
       chart.startAngle = 180
       chart.endAngle = 360
 
